@@ -2,4 +2,9 @@
 
 {% block body %}
     <h1>Create Listing</h1>
+    <form method="post">
+        {% csrf_token %}
+        {{ auction.as_p }}
+        <input type="submit" name="submit">
+    </form>
 {% endblock %}

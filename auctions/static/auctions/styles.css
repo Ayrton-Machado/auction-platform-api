@@ -1,3 +1,25 @@
 body {
     padding: 10px;
 }
+
+.listingindex {
+    display: flex;
+    margin: 10px;
+    height: max-content;
+    width: 80%;
+    border: 1px solid grey;
+    border-radius: 10px;
+    padding: 10px;
+}
+
+
+.infolistingindex {
+    padding: 15px;
+    font-family: Helvetica;
+}
+
+.imglistingindex, img {
+    border-radius: 10px;
+    max-height: 400px;
+    max-width: 400px;
+}
