@@ -3,17 +3,20 @@
 {% block body %}
     <h2>Active Listings</h2>
 
-    <div class="listingindex">
+    <div style="display: flex; flex-direction: column;">
         {% for auction in auctions %}
-            <div class="imglistingindex">
-                <img src="https://conteudo.imguol.com.br/c/entretenimento/14/2020/03/09/madison-beer-1583780571525_v2_4x3.jpg" alt="{{ auction.title }}">
-            </div>
-            <div class="infolistingindex">
-                <h3>{{ auction.title }}</h4>
-                <p>{{ auction.description }}</p>
-                <h4> R$ {{ auction.bidstart }}</h4>
-                <p style="font-size: 12px; color:rgb(131, 131, 131);">Category: {{ auction.category }}</p>
-            </div>
+            <div class="listingindex">
+                <div class="imglistingindex">
+                    <img src="{{ auction.urlImage }}" alt="{{ auction.title }}">
+                </div>
+                <div class="infolistingindex">
+                    <h3>{{ auction.title }}</h4>
+                        <p>{{ auction.description }}</p>
+                        <h4> R$ {{ auction.bidstart }}</h4>
+                        <p style="font-size: 12px; color:rgb(131, 131, 131);">Category: {{ auction.category }}</p>
+                        <p style="font-size: 12px; color:rgb(131, 131, 131);">Created by: {{ auction.createdBy }}</p>
+                </div>
+            </div>    
         {% endfor %}
     </div>
 {% endblock %}

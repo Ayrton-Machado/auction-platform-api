@@ -12,6 +12,10 @@ body {
     padding: 10px;
 }
 
+.createform {
+    display: flex;
+    flex-direction: column;
+}
 
 .infolistingindex {
     padding: 15px;
