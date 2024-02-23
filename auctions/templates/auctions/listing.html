@@ -1,0 +1,28 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+<div id="listing_body">
+    <div class="imgPrincipal">
+        <img id="listingimg" src="{{ listing.urlImage }}" alt="{{ listing.title }}">
+    </div>  
+    <div class="infoItem">
+        <h1>{{listing.title}}</h1>
+        <p>{{ listing.category }}</p>
+        <h3>R${{ listing.bidstart }}</h3>
+        <div class="buttonBid">
+            <button type="submit" name="Place Bid" value="Bid">Place Bid</button> 
+        </div>
+    </div>
+    <div class="details">
+        <h2>Details</h2>
+        <form action="{% url 'watchlist' %}">
+            <button type="submit" name='addWatchlist' value="{{ listing.id }}">Add to WatchList</button>
+        </form>
+        <p>{{ listing.description }}</p>
+        <ul>
+            <li><p>Category: {{ listing.category }}</p></li>
+            <li><p>Created By: {{ listing.createdBy }}</p></li>
+        </ul>
+    </div>
+</div>
+{% endblock %}

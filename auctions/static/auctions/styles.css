@@ -11,7 +11,12 @@ body {
     border-radius: 10px;
     padding: 10px;
 }
-
+#click {
+    display: flex;
+    flex-direction: row;
+    width: 100%;
+    height: max-content;
+}
 .createform {
     display: flex;
     flex-direction: column;
@@ -26,4 +31,19 @@ body {
     border-radius: 10px;
     max-height: 400px;
     max-width: 400px;
+}
+
+#listing_body {
+    height: 100vh;
+}
+
+.imgPrincipal {
+    width: 100%;
+}
+
+#listingimg {
+    max-height: 600px;
+    max-width: 100%;
+    width: 75%;
+    height: 1000px;
 }

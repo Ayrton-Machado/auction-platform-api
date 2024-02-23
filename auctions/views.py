@@ -74,14 +74,26 @@ def create_listing(request):
         # create listing form 
         title = request.POST.get('title')
         description = request.POST.get('description')
-        bidstart = request.POST.get('bidstart')
+        bidstart = request.POST.get(float('bidstart'))
         urlImage = request.POST.get('urlImage')
         createdBy = request.user
         category_item = request.POST.get('category')
-        #adicionanar categoria ao listamento
+        #adicionar categoria ao listamento
         category = Category.objects.get(categories=category_item)
         AuctionListing(title=title, description=description, bidstart=bidstart, urlImage=urlImage, createdBy=createdBy, category=category).save()
         return HttpResponseRedirect(reverse('index'))
     return render(request, 'auctions/createlisting.html', {
         'categories': categories
     })
+
+def listing(request, listing_id):
+    listingItem = AuctionListing.objects.get(id=listing_id)
+    return render(request, 'auctions/listing.html', {
+        'listing_id': listing_id,
+        'listing': listingItem
+    })
+
+@login_required
+def watchlist(request):
+    auctions = AuctionListing.objects.all()
+    return render(request, 'auctions/watchlist.html')
