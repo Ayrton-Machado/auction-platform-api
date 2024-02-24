@@ -17,10 +17,17 @@ class AuctionListing(models.Model):
     bidstart = models.IntegerField(blank=True)
     urlImage = models.CharField(max_length=500, blank=True)
     createdBy = models.ForeignKey(User, on_delete=models.CASCADE, max_length=64, blank=True)
-    category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, max_length=64, blank=True, unique=True)
+    category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, max_length=64, blank=True)
 
     def __str__(self):
-        return f'ID: {self.id} Título: {self.title}\nDescrição: {self.description}\nBID: {self.bidstart}\n CATG: {self.category}\n URL: {self.urlImage}\n Created by: {self.createdBy}'
+        return f'ID: {self.id} Título: {self.title}\nDescrição: {self.description}\nBID: {self.bidstart}\n CATG: {self.category}\n URL: {self.urlImage}\n Created by: {self.createdBy}\n'
+
+class Watchlist(models.Model):
+    user = models.ForeignKey(User, on_delete=models.DO_NOTHING)
+    item = models.ForeignKey(AuctionListing, on_delete=models.DO_NOTHING, blank=True)
+
+    def __str__(self):
+        return f'{self.id} {self.user} : {self.item}'
 
 class Bids(models.Model):
     pass

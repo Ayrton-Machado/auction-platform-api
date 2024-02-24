@@ -4,7 +4,7 @@ from django.http import HttpResponse, HttpResponseRedirect
 from django.shortcuts import render
 from django.urls import reverse
 from django import forms
-from .models import User, AuctionListing, Category
+from .models import *
 from django.contrib.auth.decorators import login_required
 
 def index(request):
@@ -74,7 +74,7 @@ def create_listing(request):
         # create listing form 
         title = request.POST.get('title')
         description = request.POST.get('description')
-        bidstart = request.POST.get(float('bidstart'))
+        bidstart = request.POST.get('bidstart')
         urlImage = request.POST.get('urlImage')
         createdBy = request.user
         category_item = request.POST.get('category')
@@ -95,5 +95,23 @@ def listing(request, listing_id):
 
 @login_required
 def watchlist(request):
-    auctions = AuctionListing.objects.all()
-    return render(request, 'auctions/watchlist.html')
+    user = request.user
+    userwatchlist = Watchlist.objects.filter(user=user)
+    if request.method == 'POST':
+            listing_id = request.POST.get('addWatchlist')
+            item = AuctionListing.objects.get(id=listing_id)
+            watchlist = Watchlist(user=user, item=item)
+            watchlist.save()
+            return render(request, 'auctions/watchlist.html', {
+                'watchlist': userwatchlist
+            })
+    return render(request, 'auctions/watchlist.html', {
+        'watchlist': userwatchlist
+    })
+
+def watchlistRemove(request):
+    if request.method == 'POST':
+        listing_id = request.POST.get('removeWatchlist')
+        item = Watchlist.objects.get(id=listing_id)
+        item.delete()
+    return HttpResponseRedirect(reverse('watchlist'))

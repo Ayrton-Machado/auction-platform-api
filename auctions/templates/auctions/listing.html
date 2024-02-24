@@ -15,7 +15,8 @@
     </div>
     <div class="details">
         <h2>Details</h2>
-        <form action="{% url 'watchlist' %}">
+        <form action="{% url 'watchlist' %}" method="POST">
+            {% csrf_token %}
             <button type="submit" name='addWatchlist' value="{{ listing.id }}">Add to WatchList</button>
         </form>
         <p>{{ listing.description }}</p>
