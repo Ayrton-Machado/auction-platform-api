@@ -10,7 +10,22 @@
         <p>{{ listing.category }}</p>
         <h3>R${{ listing.bidstart }}</h3>
         <div class="buttonBid">
-            <button type="submit" name="Place Bid" value="Bid">Place Bid</button> 
+            {% if win %}
+                <p>You're winning </p>
+            {% else %}
+                <p>You're losing</p>
+            {% endif %}
+            <select reverse>
+                <option>{{ bidAmount }} Bids</option>
+                {% for bid in bidlist %}
+                    <option>{{ bid.bidUser }} : {{ bid.bid }}</option>
+                {% endfor %}
+            </select>
+            <form action="{% url 'placebid' listing.id%}" method="POST">
+                {% csrf_token %}
+                <input type="text" id="bid" name="placebid">
+                <input type="submit" value="Submit">
+            </form>
         </div>
     </div>
     <div class="details">

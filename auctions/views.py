@@ -86,11 +86,28 @@ def create_listing(request):
         'categories': categories
     })
 
+@login_required
 def listing(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
+    biditem = Bids.objects.filter(bidItem=listingItem)
+    lastBid = Bids.objects.filter(bidItem=listingItem).last()
+    if lastBid is None:
+        return render(request, 'auctions/listing.html', {
+            'listing_id': listing_id,
+            'listing': listingItem
+        })
+    user = lastBid.bidUser
+    bidAmount = len(biditem)
+    if request.user == user:
+        win = True
+    else:
+        win = False
     return render(request, 'auctions/listing.html', {
         'listing_id': listing_id,
-        'listing': listingItem
+        'listing': listingItem,
+        'bidlist': biditem,
+        'bidAmount': bidAmount,
+        'win': win
     })
 
 @login_required
@@ -98,13 +115,13 @@ def watchlist(request):
     user = request.user
     userwatchlist = Watchlist.objects.filter(user=user)
     if request.method == 'POST':
-            listing_id = request.POST.get('addWatchlist')
-            item = AuctionListing.objects.get(id=listing_id)
-            watchlist = Watchlist(user=user, item=item)
-            watchlist.save()
-            return render(request, 'auctions/watchlist.html', {
-                'watchlist': userwatchlist
-            })
+        listing_id = request.POST.get('addWatchlist')
+        item = AuctionListing.objects.get(id=listing_id)
+        watchlist = Watchlist(user=user, item=item)
+        watchlist.save()
+        return render(request, 'auctions/watchlist.html', {
+            'watchlist': userwatchlist
+        })
     return render(request, 'auctions/watchlist.html', {
         'watchlist': userwatchlist
     })
@@ -115,3 +132,20 @@ def watchlistRemove(request):
         item = Watchlist.objects.get(id=listing_id)
         item.delete()
     return HttpResponseRedirect(reverse('watchlist'))
+
+def placeBid(request, listing_id):
+    listingItem = AuctionListing.objects.get(id=listing_id)
+    bidstart = listingItem.bidstart
+    bid = int(request.POST.get('placebid'))
+    bidUser = request.user
+    if bid > bidstart:
+        listingItem.bidstart = bid
+        Bids(bidUser=bidUser, bid=bid, bidItem=listingItem).save()
+        listingItem.save()
+        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+    else:
+        return render(request, 'auctions/error.html')
+    
+def error(request):
+    return render(request, 'auctions/error.html')
+    
