@@ -15,6 +15,11 @@
                         <h4> R${{ list.item.bidstart }}</h4>
                         <p style="font-size: 12px; color:rgb(131, 131, 131);">Category: {{ list.item.category }}</p>
                         <p style="font-size: 12px; color:rgb(131, 131, 131);">Created by: {{ list.item.createdBy }}</p>
+                        {% if not list.item.closed %}
+                            <p style="font-size: 12px; color:rgb(7, 129, 24);"><strong>Status:: OPEN</strong></p>
+                        {% else %}
+                            <p style="font-size: 12px; color:rgb(129, 7, 7);"><strong>Status:: CLOSED</strong></p>
+                        {% endif %}
                     </div>
                 </a>
                 <form action="{% url 'watchlistRemove' %}" method="POST">

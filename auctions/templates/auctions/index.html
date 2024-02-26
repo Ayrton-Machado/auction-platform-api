@@ -1,8 +1,7 @@
 {% extends "auctions/layout.html" %}
 
 {% block body %}
-    <h2>Active Listings</h2>
-
+    <h2>Listings</h2>
     <div style="display: flex; flex-direction: column;">
         {% for auction in auctions %}
             <div class="listingindex">
@@ -16,6 +15,11 @@
                         <h4> R${{ auction.bidstart }}</h4>
                         <p style="font-size: 12px; color:rgb(131, 131, 131);">Category: {{ auction.category }}</p>
                         <p style="font-size: 12px; color:rgb(131, 131, 131);">Created by: {{ auction.createdBy }}</p>
+                        {% if not auction.closed %}
+                            <p style="font-size: 12px; color:rgb(7, 129, 24);"><strong>Status:: OPEN</strong></p>
+                        {% else %}
+                            <p style="font-size: 12px; color:rgb(129, 7, 7);"><strong>Status:: CLOSED</strong></p>
+                        {% endif %}
                     </div>
                 </a>
             </div>    

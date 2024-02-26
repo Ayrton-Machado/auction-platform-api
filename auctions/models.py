@@ -19,21 +19,22 @@ class AuctionListing(models.Model):
     urlImage = models.CharField(max_length=500, blank=True)
     createdBy = models.ForeignKey(User, on_delete=models.CASCADE, max_length=64, blank=True)
     category = models.ForeignKey(Category, on_delete=models.DO_NOTHING, max_length=64, blank=True)
+    closed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'ID: {self.id} Título: {self.title}\nDescrição: {self.description}\nBID: {self.bidstart}\n CATG: {self.category}\n URL: {self.urlImage}\n Created by: {self.createdBy}\n'
+        return f'ID: {self.id} Título: {self.title}\nDescrição: {self.description}\nBID: {self.bidstart}\n CATG: {self.category}\n URL: {self.urlImage}\n Created by: {self.createdBy}\n {self.closed}\n'
 
 class Bids(models.Model):
-    bidUser = models.ForeignKey(User, on_delete=models.DO_NOTHING, max_length=64, blank=True)
+    bidUser = models.ForeignKey(User, on_delete=models.CASCADE, max_length=64, blank=True)
     bid = models.IntegerField(max_length=9, blank=True)
-    bidItem = models.ForeignKey(AuctionListing, on_delete=models.DO_NOTHING, blank=True)
+    bidItem = models.ForeignKey(AuctionListing, on_delete=models.CASCADE, blank=True)
     
     def __str__(self):
         return f'{self.bidUser} : {self.bid}'
 
 class Watchlist(models.Model):
     user = models.ForeignKey(User, on_delete=models.DO_NOTHING, blank=True)
-    item = models.ForeignKey(AuctionListing, on_delete=models.DO_NOTHING, blank=True)
+    item = models.ForeignKey(AuctionListing, on_delete=models.CASCADE, blank=True)
 
     def __str__(self):
         return f'{self.id} {self.user} : {self.item}'

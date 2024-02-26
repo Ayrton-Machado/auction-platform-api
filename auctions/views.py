@@ -9,10 +9,8 @@ from django.contrib.auth.decorators import login_required
 
 def index(request):
     auctions = AuctionListing.objects.all()
-    categories = Category.objects.all()
     return render(request, "auctions/index.html", {
         'auctions': auctions,
-        'categories': categories
     })
 
 
@@ -91,10 +89,15 @@ def listing(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
     biditem = Bids.objects.filter(bidItem=listingItem)
     lastBid = Bids.objects.filter(bidItem=listingItem).last()
+    if request.user == listingItem.createdBy:
+        canClose = True
+    else:
+        canClose = False
     if lastBid is None:
         return render(request, 'auctions/listing.html', {
             'listing_id': listing_id,
-            'listing': listingItem
+            'listing': listingItem,
+            'canClose': canClose
         })
     user = lastBid.bidUser
     bidAmount = len(biditem)
@@ -107,7 +110,8 @@ def listing(request, listing_id):
         'listing': listingItem,
         'bidlist': biditem,
         'bidAmount': bidAmount,
-        'win': win
+        'win': win,
+        'canClose': canClose
     })
 
 @login_required
@@ -149,3 +153,20 @@ def placeBid(request, listing_id):
 def error(request):
     return render(request, 'auctions/error.html')
     
+@login_required
+def closeAuction(request, listing_id):
+    listingItem = AuctionListing.objects.get(id=listing_id)
+    lastBid = Bids.objects.filter(bidItem=listingItem).last()
+    listingItem.closed = True
+    listingItem.save()
+    close = listingItem.closed
+    if close == True:
+        if close == True and request.user == lastBid.bidUser:
+            winner = True
+        elif close == True and request.user != lastBid.bidUser:
+            winner = False
+        return render(request, 'auctions/auctionclosed.html', {
+            'winner': winner
+        })
+    else:
+        return HttpResponseRedirect(reverse('listing', args=[listing_id]))

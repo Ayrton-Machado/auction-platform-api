@@ -1,6 +1,7 @@
 {% extends 'auctions/layout.html' %}
 
 {% block body %}
+{% if not listing.closed %}
 <div id="listing_body">
     <div class="imgPrincipal">
         <img id="listingimg" src="{{ listing.urlImage }}" alt="{{ listing.title }}">
@@ -10,22 +11,29 @@
         <p>{{ listing.category }}</p>
         <h3>R${{ listing.bidstart }}</h3>
         <div class="buttonBid">
-            {% if win %}
-                <p>You're winning </p>
+            {% if canClose %}
+                <form action="{% url 'listing' listing.id%}" method="POST">
+                    {% csrf_token %}
+                    <button type="submit" name="close">Close Auction</button>
+                </form>
             {% else %}
-                <p>You're losing</p>
-            {% endif %}
-            <select reverse>
-                <option>{{ bidAmount }} Bids</option>
-                {% for bid in bidlist %}
-                    <option>{{ bid.bidUser }} : {{ bid.bid }}</option>
-                {% endfor %}
-            </select>
-            <form action="{% url 'placebid' listing.id%}" method="POST">
-                {% csrf_token %}
-                <input type="text" id="bid" name="placebid">
-                <input type="submit" value="Submit">
-            </form>
+                {% if win %}
+                <p><strong>You're winning</strong></p>
+                {% else %}
+                <p><strong>You're losing</strong></p>
+                {% endif %}
+                <form action="{% url 'placebid' listing.id%}" method="POST">
+                    {% csrf_token %}
+                    <input type="text" id="bid" name="placebid">
+                    <input type="submit" value="Place Bid">
+                </form>
+                {% endif %}
+                <select style="padding: 5px; margin-top: 10px;">
+                    <option>{{ bidAmount }} Bids</option>
+                    {% for bid in bidlist %}
+                        <option disabled>{{ bid.bidUser }} : R${{ bid.bid }}</option>
+                    {% endfor %}
+                </select>
         </div>
     </div>
     <div class="details">
@@ -41,4 +49,8 @@
         </ul>
     </div>
 </div>
+{% else %}
+    <h1 style="color: rgb(209, 30, 30);">Auction Closed</h1>
+    <a href="{% url 'closeAuction' listing.id%}">Clique aqui para ver se voce venceu</a>
+{% endif %}
 {% endblock %}

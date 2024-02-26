@@ -1,0 +1,9 @@
+{% extends 'auctions/layout.html' %}
+
+{% block body %}
+    {% if winner %}
+        <h2 style="color: green;"><strong>VENCEUUU</strong></h2>
+    {% else %}
+        <h2 style="color: rgb(255, 0, 0);"><strong>PERDEU</strong></h2>
+    {% endif %}
+{% endblock %}
