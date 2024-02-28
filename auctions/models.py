@@ -40,5 +40,10 @@ class Watchlist(models.Model):
         return f'{self.id} {self.user} : {self.item}'
 
 class Comments(models.Model):
-    pass
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    item = models.ForeignKey(AuctionListing, on_delete=models.CASCADE)
+    comment = models.TextField(max_length=500)
+
+    def __str__(self):
+        return f'{self.user}\n{self.comment}'
 

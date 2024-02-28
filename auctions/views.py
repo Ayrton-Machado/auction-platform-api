@@ -87,6 +87,7 @@ def create_listing(request):
 @login_required
 def listing(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
+    allComments = Comments.objects.filter(item=listingItem)
     biditem = Bids.objects.filter(bidItem=listingItem)
     lastBid = Bids.objects.filter(bidItem=listingItem).last()
     if request.user == listingItem.createdBy:
@@ -97,7 +98,8 @@ def listing(request, listing_id):
         return render(request, 'auctions/listing.html', {
             'listing_id': listing_id,
             'listing': listingItem,
-            'canClose': canClose
+            'canClose': canClose,
+            'comments': allComments
         })
     user = lastBid.bidUser
     bidAmount = len(biditem)
@@ -111,7 +113,8 @@ def listing(request, listing_id):
         'bidlist': biditem,
         'bidAmount': bidAmount,
         'win': win,
-        'canClose': canClose
+        'canClose': canClose,
+        'comments': allComments
     })
 
 @login_required
@@ -170,3 +173,29 @@ def closeAuction(request, listing_id):
         })
     else:
         return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+    
+@login_required
+def addComment(request, listing_id):
+    if request.method == 'POST':
+        comment = request.POST.get('comment')
+        item = AuctionListing.objects.get(id=listing_id)
+        user = request.user
+        Comments(user=user, item=item, comment=comment).save()
+        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
+    
+def Categories(request):
+    categories = Category.objects.all()
+    return render(request, 'auctions/categories.html', {
+        'categories': categories
+    })
+
+def whichCategory(request, which_category):
+    user = request.user
+    category = Category.objects.get(categories = which_category)
+    catAuctions = AuctionListing.objects.filter(category=category)
+    allAuctions = AuctionListing.objects.all()
+    return render(request, 'auctions/category.html', {
+        'catAuctions': catAuctions,
+        'auctions': allAuctions,
+        'which_category': which_category
+    })

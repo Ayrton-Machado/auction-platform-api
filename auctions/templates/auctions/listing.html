@@ -47,6 +47,14 @@
             <li><p>Category: {{ listing.category }}</p></li>
             <li><p>Created By: {{ listing.createdBy }}</p></li>
         </ul>
+        <form action="{% url 'addComment' listing.id%}" method="POST">
+            {% csrf_token %}
+            <input type="text" name="comment" placeholder="add a comment">
+        </form>
+        {% for comment in comments %}
+            <h5>{{ comment.user }}</h5>
+            <p>{{ comment.comment }}</p>
+        {% endfor %}
     </div>
 </div>
 {% else %}
