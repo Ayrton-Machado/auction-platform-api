@@ -1,6 +1,6 @@
 # Wiki
 ## Description
-CS50’s [Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/) Project 1 - [Commerce]([https://cs50.harvard.edu/web/2020/projects/1/wiki](https://cs50.harvard.edu/web/2020/projects/2/commerce/))
+CS50’s [Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/) Project 1 - [Commerce]([https://cs50.harvard.edu/web/2020/projects/2/commerce/](https://cs50.harvard.edu/web/2020/projects/2/commerce/))
 
 ## Project description
 Design a Ebay-like online e-commerce.
@@ -9,7 +9,7 @@ Design a Ebay-like online e-commerce.
 
 ## How to run
 [Python3](https://www.python.org/) is a requirement.  
-- Install requirements with `pip install -r requirements`
+- Install django with `pip install django`
 - Run with `python manage.py runserver` or `python3 manage.py runserver`
 
 ## TODO
@@ -28,4 +28,4 @@ Design a Ebay-like online e-commerce.
        - [X] Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
   - [X] Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
   - [X] Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
-  - [ ] Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.
+  - [X] Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.
