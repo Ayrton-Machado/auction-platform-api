@@ -22,7 +22,7 @@ class AuctionListing(models.Model):
     closed = models.BooleanField(default=False)
 
     def __str__(self):
-        return f'ID: {self.id} Título: {self.title}\nDescrição: {self.description}\nBID: {self.bidstart}\n CATG: {self.category}\n URL: {self.urlImage}\n Created by: {self.createdBy}\n {self.closed}\n'
+        return f'ID: {self.id} Título: {self.title} | BID: {self.bidstart} | CATG: {self.category} | Created by: {self.createdBy} | Closed: {self.closed} |'
 
 class Bids(models.Model):
     bidUser = models.ForeignKey(User, on_delete=models.CASCADE, max_length=64, blank=True)
