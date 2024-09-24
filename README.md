@@ -1,4 +1,4 @@
-# Wiki
+# Commerce
 ## Description
 CS50’s [Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/) Project 1 - [Commerce]([https://cs50.harvard.edu/web/2020/projects/2/commerce/](https://cs50.harvard.edu/web/2020/projects/2/commerce/))
 
