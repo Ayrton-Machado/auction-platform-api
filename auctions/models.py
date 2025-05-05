@@ -9,7 +9,7 @@ class Category(models.Model):
     categories = models.CharField(max_length=64, blank=True, unique=True)
 
     def __str__(self):
-        return f'{self.categories}'
+        return f'ID: {self.id} Categories: {self.categories}'
 
 
 class AuctionListing(models.Model):

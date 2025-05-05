@@ -41,56 +41,60 @@ class LoginAPI(APIView):
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
+class RegisterAPI(APIView):      
+    def post(self, request):
+        confirmation = request.data.get("confirmation")
 
-def logout_view(request):
-    logout(request)
-    return HttpResponseRedirect(reverse("index"))
+        if request.data.get("password") != confirmation:
+            return Response({
+                "error": "Passwords must match."
+            }, status=status.HTTP_400_BAD_REQUEST)
 
+        serializer = RegisterSerializer(data=request.data)
+        if serializer.is_valid():
+            try:
+                user = serializer.save()
+                login(request, user)
 
-def register(request):
-    if request.method == "POST":
-        username = request.POST["username"]
-        email = request.POST["email"]
+                return Response({
+                    "message": "Register Successful.",
+                    "user": {
+                        "username": user.username
+                    }
+                }, status=status.HTTP_200_OK)
+            except IntegrityError:
+                return Response({
+                    "message": "Username already taken."
+                }, status=status.HTTP_401_UNAUTHORIZED)
+        else:
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
-        # Ensure password matches confirmation
-        password = request.POST["password"]
-        confirmation = request.POST["confirmation"]
-        if password != confirmation:
-            return render(request, "auctions/register.html", {
-                "message": "Passwords must match."
-            })
+class LogoutAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
-        # Attempt to create new user
-        try:
-            user = User.objects.create_user(username, email, password)
-            user.save()
-        except IntegrityError:
-            return render(request, "auctions/register.html", {
-                "message": "Username already taken."
-            })
-        login(request, user)
-        return HttpResponseRedirect(reverse("index"))
-    else:
-        return render(request, "auctions/register.html")
+    def post(self, request):
+        if request.user.is_authenticated:
+            logout(request)
+            return Response({
+                "message": "Log Out Successful"
+            }, status=status.HTTP_200_OK)
 
-def create_listing(request):
-    categories = Category.objects.all()
-    if request.method == 'POST':
-        # create listing form 
-        title = request.POST.get('title')
-        description = request.POST.get('description')
-        bidstart = request.POST.get('bidstart')
-        urlImage = request.POST.get('urlImage')
-        createdBy = request.user
-        category_item = request.POST.get('category')
-        #adicionar categoria ao listamento
-        category = Category.objects.get(categories=category_item)
-        AuctionListing(title=title, description=description, bidstart=bidstart, urlImage=urlImage, createdBy=createdBy, category=category).save()
-        return HttpResponseRedirect(reverse('index'))
-    return render(request, 'auctions/createlisting.html', {
-        'categories': categories
-    })
+class CreateListingAPI(APIView):
+    #check if logged
+    permission_classes = [IsAuthenticated]
 
+    def post(self, request):
+        #serializer
+        serializer = CreateListingSerializer(data=request.data, context={"request": request})
+
+        if serializer.is_valid():
+            serializer.save()
+
+            return Response({
+                "message": "Create Listing Successful."
+            }, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+        
 def listing(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
     allComments = Comments.objects.filter(item=listingItem)
