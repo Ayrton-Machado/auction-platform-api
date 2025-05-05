@@ -1,37 +1,45 @@
-from django.contrib.auth import authenticate, login, logout
+# Autenticação
+from django.contrib.auth import authenticate
+from rest_framework.views import APIView
+from rest_framework.response import Response
+from rest_framework import status
+from rest_framework.permissions import IsAuthenticated  # Substitui IsAuthenticated
+
+# Banco de dados
 from django.db import IntegrityError
-from django.http import HttpResponse, HttpResponseRedirect
-from django.shortcuts import render
-from django.urls import reverse
-from django import forms
 from .models import *
-from django.contrib.auth.decorators import login_required
+from .serializers import *  # Novo: substitui forms
 
-def index(request):
-    auctions = AuctionListing.objects.all()
-    return render(request, "auctions/index.html", {
-        'auctions': auctions,
-    })
+class indexAPI(APIView):
+    def get(self, request):
+        auctions = AuctionListing.objects.all()
+        return Response({'auctions': list(auctions.values())})
 
+class LoginAPI(APIView):
+    def post(self, request):
+        serializer = LoginSerializer(data=request.data)
+        if serializer.is_valid():
+            # Attempt to sign user in
+            username = serializer.validated_data["username"]
+            password = serializer.validated_data["password"]
 
-def login_view(request):
-    if request.method == "POST":
+            user = authenticate(request, username=username, password=password)
 
-        # Attempt to sign user in
-        username = request.POST["username"]
-        password = request.POST["password"]
-        user = authenticate(request, username=username, password=password)
-
-        # Check if authentication successful
-        if user is not None:
-            login(request, user)
-            return HttpResponseRedirect(reverse("index"))
+            # Check if authentication successful
+            if user is not None:
+                login(request, user)
+                return Response({
+                    "message": "Login Successful.",
+                    "user": {
+                        "username": user.username
+                    }
+                }, status=status.HTTP_200_OK)
+            else:
+                return Response({
+                    "error": "Invalid username and/or password."
+                }, status=status.HTTP_401_UNAUTHORIZED)
         else:
-            return render(request, "auctions/login.html", {
-                "message": "Invalid username and/or password."
-            })
-    else:
-        return render(request, "auctions/login.html")
+            return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 def logout_view(request):
@@ -65,7 +73,6 @@ def register(request):
     else:
         return render(request, "auctions/register.html")
 
-@login_required
 def create_listing(request):
     categories = Category.objects.all()
     if request.method == 'POST':
@@ -84,7 +91,6 @@ def create_listing(request):
         'categories': categories
     })
 
-@login_required
 def listing(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
     allComments = Comments.objects.filter(item=listingItem)
@@ -117,7 +123,7 @@ def listing(request, listing_id):
         'comments': allComments
     })
 
-@login_required
+
 def watchlist(request):
     user = request.user
     userwatchlist = Watchlist.objects.filter(user=user)
@@ -156,7 +162,7 @@ def placeBid(request, listing_id):
 def error(request):
     return render(request, 'auctions/error.html')
     
-@login_required
+
 def closeAuction(request, listing_id):
     listingItem = AuctionListing.objects.get(id=listing_id)
     lastBid = Bids.objects.filter(bidItem=listingItem).last()
@@ -174,7 +180,7 @@ def closeAuction(request, listing_id):
     else:
         return HttpResponseRedirect(reverse('listing', args=[listing_id]))
     
-@login_required
+
 def addComment(request, listing_id):
     if request.method == 'POST':
         comment = request.POST.get('comment')
