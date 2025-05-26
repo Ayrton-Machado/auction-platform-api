@@ -88,124 +88,141 @@ class CreateListingAPI(APIView):
         serializer = CreateListingSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
-            serializer.save()
+            try:
+                serializer.save()
+                return Response({
+                    "message": "Create Listing Successful.",
+                    "listing": serializer.data
+                }, status=status.HTTP_201_CREATED)
+            except Exception as e:
+                return Response({"error": "Error saving to the database."})
+        print(serializer.errors)
+        return Response({
+            "message": "Invalid data. Please correct the errors and try again.",
+            "errors": serializer.errors
+        }, status=status.HTTP_400_BAD_REQUEST)
 
+class ListingPageAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def get(self, request, listing_id):  
+
+        listingItem = AuctionListing.objects.get(id=listing_id)
+        allComments = Comments.objects.filter(item=listingItem)
+        biditem = Bids.objects.filter(bidItem=listingItem)
+        lastBid = Bids.objects.filter(bidItem=listingItem).last()
+        if request.user == listingItem.createdBy:
+            canClose = True
+        else:
+            canClose = False
+        if lastBid is None:
             return Response({
-                "message": "Create Listing Successful."
-            }, status=status.HTTP_201_CREATED)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
-        
-def listing(request, listing_id):
-    listingItem = AuctionListing.objects.get(id=listing_id)
-    allComments = Comments.objects.filter(item=listingItem)
-    biditem = Bids.objects.filter(bidItem=listingItem)
-    lastBid = Bids.objects.filter(bidItem=listingItem).last()
-    if request.user == listingItem.createdBy:
-        canClose = True
-    else:
-        canClose = False
-    if lastBid is None:
-        return render(request, 'auctions/listing.html', {
+                'listing_id': listing_id,
+                'listing': listingItem,
+                'canClose': canClose,
+                'comments': allComments
+            }, status=status.HTTP_200_OK)
+        user = lastBid.bidUser
+        bidAmount = len(biditem)
+        if request.user == user:
+            win = True
+        else:
+            win = False
+        return Response({
             'listing_id': listing_id,
             'listing': listingItem,
+            'bidlist': biditem,
+            'bidAmount': bidAmount,
+            'win': win,
             'canClose': canClose,
             'comments': allComments
-        })
-    user = lastBid.bidUser
-    bidAmount = len(biditem)
-    if request.user == user:
-        win = True
-    else:
-        win = False
-    return render(request, 'auctions/listing.html', {
-        'listing_id': listing_id,
-        'listing': listingItem,
-        'bidlist': biditem,
-        'bidAmount': bidAmount,
-        'win': win,
-        'canClose': canClose,
-        'comments': allComments
-    })
+        }, status=status.HTTP_200_OK)
 
+class WatchlistAddAuctionAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
-def watchlist(request):
-    user = request.user
-    userwatchlist = Watchlist.objects.filter(user=user)
-    if request.method == 'POST':
+    serializer = WatchlistAddAuctionSerializer()
+
+    def post(self, request):
+        user = request.user
+        userwatchlist = Watchlist.objects.filter(user=user)
         listing_id = request.POST.get('addWatchlist')
         item = AuctionListing.objects.get(id=listing_id)
         watchlist = Watchlist(user=user, item=item)
         watchlist.save()
-        return render(request, 'auctions/watchlist.html', {
-            'watchlist': userwatchlist
-        })
-    return render(request, 'auctions/watchlist.html', {
-        'watchlist': userwatchlist
-    })
 
-def watchlistRemove(request):
-    if request.method == 'POST':
+        return Response({
+            'watchlist': userwatchlist
+        }, status=status.HTTP_200_OK)
+
+class WatchlistRemoveAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
         listing_id = request.POST.get('removeWatchlist')
         item = Watchlist.objects.get(id=listing_id)
         item.delete()
-    return HttpResponseRedirect(reverse('watchlist'))
+        return Response({"nessage": "Auction successfully removed from watchlist."}, status=status.HTTP_200_OK)
 
-def placeBid(request, listing_id):
-    listingItem = AuctionListing.objects.get(id=listing_id)
-    bidstart = listingItem.bidstart
-    bid = int(request.POST.get('placebid'))
-    bidUser = request.user
-    if bid > bidstart:
-        listingItem.bidstart = bid
-        Bids(bidUser=bidUser, bid=bid, bidItem=listingItem).save()
+class PlaceBidAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request, listing_id):
+        listingItem = AuctionListing.objects.get(id=listing_id)
+        bidstart = listingItem.bidstart
+        bid = int(request.POST.get('placebid'))
+        bidUser = request.user
+        if bid > bidstart:
+            listingItem.bidstart = bid
+            Bids(bidUser=bidUser, bid=bid, bidItem=listingItem).save()
+            listingItem.save()
+            return Response({"message": "Bid placed successfully."}, status=status.HTTP_200_OK)
+        else:
+            Response({
+                "error": "Bid must be higher than current bid.",
+                "current_bid": bidstart
+            }, status=status.HTTP_400_BAD_REQUEST)
+
+class CloseAuctionAPI(APIView):
+    def post(self, request, listing_id):
+        listingItem = AuctionListing.objects.get(id=listing_id)
+        lastBid = Bids.objects.filter(bidItem=listingItem).last()
+        listingItem.closed = True
         listingItem.save()
-        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
-    else:
-        return render(request, 'auctions/error.html')
+        close = listingItem.closed
+        if close == True:
+            if close == True and request.user == lastBid.bidUser:
+                winner = True
+            elif close == True and request.user != lastBid.bidUser:
+                winner = False
+            return Response({
+                "winner": winner
+            })
+        else:
+            return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
     
-def error(request):
-    return render(request, 'auctions/error.html')
-    
-
-def closeAuction(request, listing_id):
-    listingItem = AuctionListing.objects.get(id=listing_id)
-    lastBid = Bids.objects.filter(bidItem=listingItem).last()
-    listingItem.closed = True
-    listingItem.save()
-    close = listingItem.closed
-    if close == True:
-        if close == True and request.user == lastBid.bidUser:
-            winner = True
-        elif close == True and request.user != lastBid.bidUser:
-            winner = False
-        return render(request, 'auctions/auctionclosed.html', {
-            'winner': winner
-        })
-    else:
-        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
-    
-
-def addComment(request, listing_id):
-    if request.method == 'POST':
+class AddCommentAPI(APIView):
+    def post(self, request, listing_id):
         comment = request.POST.get('comment')
         item = AuctionListing.objects.get(id=listing_id)
         user = request.user
         Comments(user=user, item=item, comment=comment).save()
-        return HttpResponseRedirect(reverse('listing', args=[listing_id]))
-    
-def Categories(request):
-    categories = Category.objects.all()
-    return render(request, 'auctions/categories.html', {
-        'categories': categories
-    })
+        return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
 
-def whichCategory(request, which_category):
-    user = request.user
-    category = Category.objects.get(categories = which_category)
-    catAuctions = AuctionListing.objects.filter(category=category)
-    allAuctions = AuctionListing.objects.all()
-    return render(request, 'auctions/category.html', {
-        'catAuctions': catAuctions,
-        'auctions': allAuctions,
-        'which_category': which_category
-    })
+class ShowCategoriesAPI(APIView):   
+    def get(self, request):
+        categories = Category.objects.all()
+        return Response({
+            "categories" : categories
+        }, status=status.HTTP_200_OK)
+
+class CategoriesAuctionsAPI(APIView):
+    def get(self, request, selectedCategory):
+        category = Category.objects.get(categories = selectedCategory)
+        categoriesAuctions = AuctionListing.objects.filter(category=category)
+        allAuctions = AuctionListing.objects.all()
+        return Response({
+            'categoriesAuctions': categoriesAuctions,
+            'auctions': allAuctions,
+            'selectedCategory': selectedCategory
+        }, status=status.HTTP_200_OK)

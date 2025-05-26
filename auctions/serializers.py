@@ -35,3 +35,12 @@ class CreateListingSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         validated_data['createdBy'] = self.context['request'].user
         return AuctionListing.objects.create(**validated_data)
+    
+class WatchlistAddAuctionSerializer(serializers.Serializer):
+    class Meta:
+        model = Watchlist
+        fields = ["user", "item"]
+    
+    def create(self, validated_data):
+        validated_data['createdBy'] = self.context['request'].user
+        
