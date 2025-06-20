@@ -1,5 +1,6 @@
-# Autenticação
+
 from django.contrib.auth import authenticate
+from django.shortcuts import get_object_or_404
 from rest_framework.views import APIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -70,7 +71,6 @@ class RegisterAPI(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         if request.user.is_authenticated:
@@ -80,8 +80,6 @@ class LogoutAPI(APIView):
             }, status=status.HTTP_200_OK)
 
 class CreateListingAPI(APIView):
-    #check if logged
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         #serializer
@@ -103,7 +101,6 @@ class CreateListingAPI(APIView):
         }, status=status.HTTP_400_BAD_REQUEST)
 
 class ListingPageAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
     def get(self, request, listing_id):  
 
@@ -139,7 +136,6 @@ class ListingPageAPI(APIView):
         }, status=status.HTTP_200_OK)
 
 class WatchlistAddAuctionAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
     serializer = WatchlistAddAuctionSerializer()
 
@@ -156,16 +152,14 @@ class WatchlistAddAuctionAPI(APIView):
         }, status=status.HTTP_200_OK)
 
 class WatchlistRemoveAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
     def post(self, request):
         listing_id = request.POST.get('removeWatchlist')
         item = Watchlist.objects.get(id=listing_id)
         item.delete()
-        return Response({"nessage": "Auction successfully removed from watchlist."}, status=status.HTTP_200_OK)
+        return Response({"message": "Auction successfully removed from watchlist."}, status=status.HTTP_200_OK)
 
 class PlaceBidAPI(APIView):
-    permission_classes = [IsAuthenticated]
 
     def post(self, request, listing_id):
         listingItem = AuctionListing.objects.get(id=listing_id)
@@ -184,6 +178,7 @@ class PlaceBidAPI(APIView):
             }, status=status.HTTP_400_BAD_REQUEST)
 
 class CloseAuctionAPI(APIView):
+
     def post(self, request, listing_id):
         listingItem = AuctionListing.objects.get(id=listing_id)
         lastBid = Bids.objects.filter(bidItem=listingItem).last()
@@ -202,12 +197,18 @@ class CloseAuctionAPI(APIView):
             return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
     
 class AddCommentAPI(APIView):
+
     def post(self, request, listing_id):
-        comment = request.POST.get('comment')
-        item = AuctionListing.objects.get(id=listing_id)
-        user = request.user
-        Comments(user=user, item=item, comment=comment).save()
-        return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
+        item = get_object_or_404(AuctionListing, id=listing_id)
+
+        serializer = AddCommentSerializer(
+            data=request.data,
+            context={'request': request, "item": item}
+        )
+        if serializer.is_valid():
+            serializer.save()
+            return Response({"message": "Comment send successfully."}, status=status.HTTP_201_CREATED)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class ShowCategoriesAPI(APIView):   
     def get(self, request):

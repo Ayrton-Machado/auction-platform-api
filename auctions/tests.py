@@ -134,4 +134,43 @@ class CreateListingTest(APITestCase):
         
         # Espera-se o status 403 do bloqueio pelo permission_classes = [IsAuthenticated]
         self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
-        
+
+class AddCommentTest(APITestCase):
+    def setUp(self):
+        self.user = User.objects.create_user(username="jane", password="secret123")
+        self.client.force_authenticate(user=self.user)
+
+        self.category = Category.objects.create(categories="Eletrônicos")
+        self.listing = AuctionListing.objects.create(
+            title="Notebook Gamer",
+            description="RTX 4070, i9, 32GB RAM",
+            bidstart=5000,
+            urlImage="http://example.com/notebook.jpg",
+            category=self.category,
+            createdBy=self.user
+        )
+
+        self.url = reverse("api-addComment", kwargs={"listing_id": self.listing.id})
+
+    def test_add_comment_successfully(self):
+        response = self.client.post(self.url, {"comment": "Produto sensacional!"})
+        self.assertEqual(response.status_code, status.HTTP_201_CREATED)
+        self.assertEqual(response.data["message"], "Comment send successfully.")
+
+        # Verificar se comentário foi criado no banco
+        comment_exists = Comments.objects.filter(
+            user=self.user, item=self.listing, comment="Produto sensacional!"
+        ).exists()
+        self.assertTrue(comment_exists)
+
+    def test_add_comment_without_authentication(self):
+        self.client.logout()
+        response = self.client.post(self.url, {"comment": "Não deveria funcionar"})
+        self.assertEqual(response.status_code, status.HTTP_403_FORBIDDEN)
+
+    def test_add_comment_missing_field(self):
+        response = self.client.post(self.url, {})  # Sem o campo 'comment'
+        self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
+        self.assertIn('comment', response.data)
+        self.assertTrue(any('required' in msg.lower() for msg in response.data['comment']))
+        self.assertEqual(Comments.objects.count(), 0)
