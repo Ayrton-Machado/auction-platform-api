@@ -6,6 +6,16 @@ class AuctionSerializer(serializers.ModelSerializer):
         model = AuctionListing
         fields = '__all__'  # Ou liste campos específicos: ['id', 'title', ...]
 
+class CommentsSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Comments
+        fields = '__all__'
+
+class BidSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Bids
+        fields = '__all__'
+
 class LoginSerializer(serializers.Serializer):
     username = serializers.CharField()
     password = serializers.CharField()

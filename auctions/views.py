@@ -71,7 +71,6 @@ class RegisterAPI(APIView):
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 class LogoutAPI(APIView):
-
     def post(self, request):
         if request.user.is_authenticated:
             logout(request)
@@ -102,37 +101,37 @@ class CreateListingAPI(APIView):
 
 class ListingPageAPI(APIView):
 
-    def get(self, request, listing_id):  
+    def get(self, request, listing_id):
+        try:
+            listingItem = AuctionListing.objects.get(id=listing_id)
+        except AuctionListing.DoesNotExist:
+            return Response({"error": "Listing not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        listingItem = AuctionListing.objects.get(id=listing_id)
         allComments = Comments.objects.filter(item=listingItem)
-        biditem = Bids.objects.filter(bidItem=listingItem)
-        lastBid = Bids.objects.filter(bidItem=listingItem).last()
-        if request.user == listingItem.createdBy:
-            canClose = True
-        else:
-            canClose = False
-        if lastBid is None:
-            return Response({
-                'listing_id': listing_id,
-                'listing': listingItem,
-                'canClose': canClose,
-                'comments': allComments
-            }, status=status.HTTP_200_OK)
-        user = lastBid.bidUser
-        bidAmount = len(biditem)
-        if request.user == user:
-            win = True
-        else:
-            win = False
+        bidsItem = Bids.objects.filter(bidItem=listingItem)
+        lastBid = bidsItem.last()
+        isOwner = request.user == listingItem.createdBy
+
+        # Apenas define "win" se o leilão estiver fechado e houver um último lance
+        win = False
+        if listingItem.closed and lastBid is not None:
+            win = request.user == lastBid.bidUser
+
+
+        #data
+        allCommentsData = CommentsSerializer(allComments, many=True).data
+        bidsItemData = BidSerializer(bidsItem, many=True).data
+        listingItemData = AuctionSerializer(listingItem).data
+        bidAmount = bidsItem.count()
+
+
         return Response({
-            'listing_id': listing_id,
-            'listing': listingItem,
-            'bidlist': biditem,
+            'listing': listingItemData,
+            'bidList': bidsItemData,
             'bidAmount': bidAmount,
             'win': win,
-            'canClose': canClose,
-            'comments': allComments
+            'isOwner': isOwner,
+            'comments': allCommentsData
         }, status=status.HTTP_200_OK)
 
 class WatchlistAddAuctionAPI(APIView):
