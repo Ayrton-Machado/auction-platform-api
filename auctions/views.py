@@ -135,19 +135,28 @@ class ListingPageAPI(APIView):
         }, status=status.HTTP_200_OK)
 
 class WatchlistAddAuctionAPI(APIView):
-
-    serializer = WatchlistAddAuctionSerializer()
-
-    def post(self, request):
+    def post(self, request, listing_id):
         user = request.user
-        userwatchlist = Watchlist.objects.filter(user=user)
-        listing_id = request.POST.get('addWatchlist')
+        print("aaaaaaaaaaaaaaaa")
+        print((listing_id, user))
         item = AuctionListing.objects.get(id=listing_id)
         watchlist = Watchlist(user=user, item=item)
         watchlist.save()
 
         return Response({
-            'watchlist': userwatchlist
+            'message': 'Successfully added to watchlist'
+        }, status=status.HTTP_200_OK)
+
+
+class WatchlistAuctionAPI(APIView):
+
+    def get(self, request):
+        user = request.user.id
+        userWatchlist = Watchlist.objects.filter(user=user)
+        userWatchlistData = WatchlistSerializer(userWatchlist, many=True).data
+
+        return Response({
+            'watchlist': userWatchlistData
         }, status=status.HTTP_200_OK)
 
 class WatchlistRemoveAPI(APIView):
