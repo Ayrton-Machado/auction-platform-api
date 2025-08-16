@@ -1,31 +1,68 @@
-# Commerce
-## Description
-CS50’s [Web Programming with Python and JavaScript](https://cs50.harvard.edu/web/2020/) Project 1 - [Commerce]([https://cs50.harvard.edu/web/2020/projects/2/commerce/](https://cs50.harvard.edu/web/2020/projects/2/commerce/))
+# auction-platform-api
 
-## Project description
-Design a Ebay-like online e-commerce.
+![Python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
+![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
+![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
+![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 
-## git clone https://github.com/Ayrton-Machado/commerce
+> API completa para sistema de leilões online com **autenticação JWT, criação de anúncios, sistema de lances, watchlist e comentários**. 
+> Suporta **categorias, administração via Django Admin e controle de leilões ativos/fechados**.
 
-## How to run
-[Python3](https://www.python.org/) is a requirement.  
-- Install django with `pip install django`
-- Run with `python manage.py runserver` or `python3 manage.py runserver`
+### Ajustes e melhorias
 
-## TODO
-  - [X] Models: Your application should have at least three models in addition to the User model: one for auction listings, one for bids, and one for comments made on auction listings.
-        It’s up to you to decide what fields each model should have, and what the types of those fields should be. You may have additional models if you would like.
-  - [X] Create Listing: Users should be able to visit a page to create a new listing. They should be able to specify a title for the listing, a text-based description,
-        and what the starting bid should be. Users should also optionally be able to provide a URL for an image for the listing and/or a category (e.g. Fashion, Toys, Electronics, Home, etc.).
-  - [X] Active Listings Page: The default route of your web application should let users view all of the currently active auction listings. For each active listing,
-        this page should display (at minimum) the title, description, current price, and photo (if one exists for the listing).
-  - [X] Listing Page: Clicking on a listing should take users to a page specific to that listing. On that page, users should be able to view all details about the listing, including the current price for the listing.
-       - [X] If the user is signed in, the user should be able to add the item to their “Watchlist.” If the item is already on the watchlist, the user should be able to remove it.
-       - [X] If the user is signed in, the user should be able to bid on the item. The bid must be at least as large as the starting bid,
-             and must be greater than any other bids that have been placed (if any). If the bid doesn’t meet those criteria, the user should be presented with an error.
-       - [X] If the user is signed in and is the one who created the listing, the user should have the ability to “close” the auction from this page, which makes the highest bidder the winner of the auction and makes the listing no longer active.
-       - [X] If a user is signed in on a closed listing page, and the user has won that auction, the page should say so.
-       - [X] Users who are signed in should be able to add comments to the listing page. The listing page should display all comments that have been made on the listing.
-  - [X] Watchlist: Users who are signed in should be able to visit a Watchlist page, which should display all of the listings that a user has added to their watchlist. Clicking on any of those listings should take the user to that listing’s page.
-  - [X] Categories: Users should be able to visit a page that displays a list of all listing categories. Clicking on the name of any category should take the user to a page that displays all of the active listings in that category.
-  - [X] Django Admin Interface: Via the Django admin interface, a site administrator should be able to view, add, edit, and delete any listings, comments, and bids made on the site.
+O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
+
+- [ ] Atualizar retorno de todos os endpoints.
+- [ ] Acrescentar testes em todo o projeto.
+- [ ] Implementar autenticação JWT.
+- [ ] Integrar Postgres.
+
+## 💻 Pré-requisitos
+
+Antes de começar, verifique se você atendeu aos seguintes requisitos:
+
+- Você instalou a versão mais recente do [Python 3.13+](https://www.python.org/)
+
+## 🚀 Instalando
+
+Para instalar, siga estas etapas:
+
+1. Clone o repositório:
+```bash
+git clone https://github.com/Ayrton-Machado/auction-platform-api
+cd auction-platform-api
+```
+
+2. Instale as dependências:
+```bash
+pip install -r requirements.txt
+```
+
+3. Configure o setup do Banco de Dados:
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+4. (Opcional) Criar superuser para acessar Django Admin:
+```bash
+python manage.py createsuperuser
+```
+- http://127.0.0.1:8000/api/admin
+
+## ☕ Usando
+
+Para usar, siga estas etapas:
+
+1. Iniciar API
+```
+python manage.py runserver
+```
+
+2. Acesse a documentação API Swagger.
+- http://127.0.0.1:8000/api/docs
+
+
+## 📝 Licença
+
+Esse projeto está sob licença. Veja o arquivo [LICENÇA](LICENSE) para mais detalhes.
