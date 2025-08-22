@@ -6,6 +6,12 @@ class AuctionSerializer(serializers.ModelSerializer):
         model = AuctionListing
         fields = '__all__'  # Ou liste campos específicos: ['id', 'title', ...]
 
+class CategorySerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Category
+        fields = '__all__'  # Ou liste campos específicos: ['id', 'title', ...]
+
+
 class WatchlistSerializer(serializers.ModelSerializer):
     class Meta:
         model = Watchlist

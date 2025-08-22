@@ -137,7 +137,6 @@ class ListingPageAPI(APIView):
 class WatchlistAddAuctionAPI(APIView):
     def post(self, request, listing_id):
         user = request.user
-        print("aaaaaaaaaaaaaaaa")
         print((listing_id, user))
         item = AuctionListing.objects.get(id=listing_id)
         watchlist = Watchlist(user=user, item=item)
@@ -227,11 +226,18 @@ class ShowCategoriesAPI(APIView):
 
 class CategoriesAuctionsAPI(APIView):
     def get(self, request, selectedCategory):
-        category = Category.objects.get(categories = selectedCategory)
+        category = Category.objects.filter(id = selectedCategory)
+
+        if not category:
+            return Response({"error": "Category does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        
         categoriesAuctions = AuctionListing.objects.filter(category=category)
-        allAuctions = AuctionListing.objects.all()
+
+        categorySerializer = CategorySerializer(categoriesAuctions)
+        nameCategorySerializer = CategorySerializer(category)
+
         return Response({
-            'categoriesAuctions': categoriesAuctions,
-            'auctions': allAuctions,
-            'selectedCategory': selectedCategory
+            'selectedCategory': nameCategorySerializer,
+            'categoriesAuctions': categorySerializer,
         }, status=status.HTTP_200_OK)
+
