@@ -9,13 +9,26 @@
 > Suporta **categorias, administração via Django Admin e controle de leilões ativos/fechados**.
 
 ### Ajustes e melhorias
-
 O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
 
 - [ ] Atualizar retorno de todos os endpoints.
 - [ ] Acrescentar testes em todo o projeto.
-- [ ] Implementar autenticação JWT.
 - [ ] Integrar Postgres.
+- [ ] Implementar autenticação JWT.
+
+**IA de Confiança:**
+- [ ] Criar repositório separado no Hugging Face Hub.
+- [ ] Desenvolver modelo de análise de imagem no Jupyter.
+- [ ] Treinar modelo NLP para análise de descrições.
+- [ ] Publicar modelo treinado no Hugging Face Hub.
+- [ ] Integrar API do Hugging Face no endpoint de confiança.
+
+**Deploy e Infraestrutura:**
+- [ ] Configurar Droplet para backend Django.
+- [ ] Configurar PostgreSQL Managed Database.
+- [ ] Implementar DigitalOcean Spaces para upload de imagens.
+- [ ] Deploy do frontend no App Platform.
+- [ ] Configurar domínio customizado e SSL.
 
 ## 💻 Pré-requisitos
 

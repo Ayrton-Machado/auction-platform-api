@@ -14,6 +14,8 @@ from .serializers import *  # Novo: substitui forms
 class indexAPI(APIView):
     def get(self, request):
         auctions = AuctionListing.objects.all()
+        if not auctions.exists():
+            return Response({"message": "No auctions available."}, status=status.HTTP_404_NOT_FOUND)
         return Response({'auctions': list(auctions.values())})
 
 class LoginAPI(APIView):
@@ -77,11 +79,14 @@ class LogoutAPI(APIView):
             return Response({
                 "message": "Log Out Successful"
             }, status=status.HTTP_200_OK)
+        return Response({
+            "message": "User is not logged"
+        }, status=status.HTTP_400_BAD_REQUEST)
 
 class CreateListingAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        #serializer
         serializer = CreateListingSerializer(data=request.data, context={"request": request})
 
         if serializer.is_valid():
@@ -93,7 +98,6 @@ class CreateListingAPI(APIView):
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:
                 return Response({"error": "Error saving to the database."})
-        print(serializer.errors)
         return Response({
             "message": "Invalid data. Please correct the errors and try again.",
             "errors": serializer.errors
@@ -137,7 +141,6 @@ class ListingPageAPI(APIView):
 class WatchlistAddAuctionAPI(APIView):
     def post(self, request, listing_id):
         user = request.user
-        print((listing_id, user))
         item = AuctionListing.objects.get(id=listing_id)
         watchlist = Watchlist(user=user, item=item)
         watchlist.save()
@@ -148,10 +151,11 @@ class WatchlistAddAuctionAPI(APIView):
 
 
 class WatchlistAuctionAPI(APIView):
-
     def get(self, request):
         user = request.user.id
         userWatchlist = Watchlist.objects.filter(user=user)
+        if not userWatchlist.exists():
+            return Response({"message": "Watchlist is empty."}, status=status.HTTP_404_NOT_FOUND)
         userWatchlistData = WatchlistSerializer(userWatchlist, many=True).data
 
         return Response({
@@ -161,7 +165,7 @@ class WatchlistAuctionAPI(APIView):
 class WatchlistRemoveAPI(APIView):
 
     def post(self, request):
-        listing_id = request.POST.get('removeWatchlist')
+        listing_id = request.data.get('removeWatchlist')
         item = Watchlist.objects.get(id=listing_id)
         item.delete()
         return Response({"message": "Auction successfully removed from watchlist."}, status=status.HTTP_200_OK)
@@ -171,7 +175,7 @@ class PlaceBidAPI(APIView):
     def post(self, request, listing_id):
         listingItem = AuctionListing.objects.get(id=listing_id)
         bidstart = listingItem.bidstart
-        bid = int(request.POST.get('placebid'))
+        bid = int(request.data.get('placebid'))
         bidUser = request.user
         if bid > bidstart:
             listingItem.bidstart = bid
@@ -179,7 +183,7 @@ class PlaceBidAPI(APIView):
             listingItem.save()
             return Response({"message": "Bid placed successfully."}, status=status.HTTP_200_OK)
         else:
-            Response({
+            return Response({
                 "error": "Bid must be higher than current bid.",
                 "current_bid": bidstart
             }, status=status.HTTP_400_BAD_REQUEST)
@@ -202,8 +206,9 @@ class CloseAuctionAPI(APIView):
             })
         else:
             return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
-    
+
 class AddCommentAPI(APIView):
+    permission_classes = [IsAuthenticated]
 
     def post(self, request, listing_id):
         item = get_object_or_404(AuctionListing, id=listing_id)
@@ -220,21 +225,21 @@ class AddCommentAPI(APIView):
 class ShowCategoriesAPI(APIView):   
     def get(self, request):
         categories = Category.objects.all()
+        categories_serializer = CategorySerializer(categories, many=True).data
         return Response({
-            "categories" : categories
+            "categories" : categories_serializer
         }, status=status.HTTP_200_OK)
 
 class CategoriesAuctionsAPI(APIView):
     def get(self, request, selectedCategory):
-        category = Category.objects.filter(id = selectedCategory)
-
-        if not category:
-            return Response({"error": "Category does not exist."}, status=status.HTTP_404_NOT_FOUND)
-        
+        category = Category.objects.filter(id = selectedCategory).first()
         categoriesAuctions = AuctionListing.objects.filter(category=category)
 
-        categorySerializer = CategorySerializer(categoriesAuctions)
-        nameCategorySerializer = CategorySerializer(category)
+        if category is None or not categoriesAuctions.exists():
+            return Response({"message": "Category or Auctions in this Category does not exist."}, status=status.HTTP_404_NOT_FOUND)
+        
+        categorySerializer = AuctionSerializer(categoriesAuctions, many=True).data
+        nameCategorySerializer = CategorySerializer(category).data
 
         return Response({
             'selectedCategory': nameCategorySerializer,
