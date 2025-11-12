@@ -4,6 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
+from django.db import transaction
 
 from ..models import AuctionListing, Comments, Bids, Category
 from ..serializers import CategorySerializer, CreateListingSerializer, CommentsSerializer, BidSerializer, AuctionSerializer
@@ -134,8 +135,9 @@ class CategoriesAuctionsAPI(APIView):
 class CloseAuctionAPI(APIView):
     permission_classes = [IsAuthenticated]
 
+    @transaction.atomic
     def post(self, request, listing_id):
-        listingItem = AuctionListing.objects.get(id=listing_id)
+        listingItem = get_object_or_404(AuctionListing, id=listing_id)
         lastBid = Bids.objects.filter(bidItem=listingItem).last()
         listingItem.closed = True
         listingItem.save()
@@ -146,7 +148,24 @@ class CloseAuctionAPI(APIView):
             elif close == True and request.user != lastBid.bidUser:
                 winner = False
             return Response({
-                "winner": winner
-            })
+                "error": "You may not close this auction."
+            }, status=status.HTTP_403_FORBIDDEN)
+        else:
+            return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
+        
+    def get(self, request, listing_id):
+        
+        listingItem = get_object_or_404(AuctionListing, id=listing_id)
+        lastBid = Bids.objects.filter(bidItem=listingItem).last()
+        listingItem.save()
+        close = listingItem.closed
+        if close:
+            if request.user == lastBid.bidUser:
+                winner = True
+            elif request.user != lastBid.bidUser:
+                winner = False
+            return Response({
+                "error": "You may not close this auction."
+            }, status=status.HTTP_403_FORBIDDEN)
         else:
             return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)

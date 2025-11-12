@@ -47,3 +47,7 @@ def auction_listing(db, category, user):
 @pytest.fixture
 def watchlist_listing(db, user, auction_listing):
     return Watchlist.objects.create(user=user, item=auction_listing)
+
+@pytest.fixture
+def bid(db, user, auction_listing):
+    return Bids.objects.create(bidUser=user, bid=150, bidItem=auction_listing)

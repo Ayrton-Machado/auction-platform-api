@@ -11,7 +11,6 @@ class Category(models.Model):
     def __str__(self):
         return f'ID: {self.id} Categories: {self.categories}'
 
-
 class AuctionListing(models.Model):
     title = models.CharField(max_length=64, blank=True)
     description = models.TextField(max_length=500, blank=True)
