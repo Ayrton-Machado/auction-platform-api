@@ -36,6 +36,8 @@ class indexAPI(APIView):
 class CreateListingAPI(APIView):
     permission_classes = [IsAuthenticated]
 
+    
+
     def post(self, request):
         serializer = CreateListingSerializer(data=request.data, context={"request": request})
 

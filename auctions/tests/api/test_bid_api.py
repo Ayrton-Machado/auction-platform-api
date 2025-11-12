@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from auctions.models import User, Bids
+from decimal import Decimal
 
 class TestPlaceBidAPI: #Zombies
     @pytest.fixture(autouse=True)
@@ -39,10 +40,10 @@ class TestPlaceBidAPI: #Zombies
         api_client.post(self.url, {'placebid': 150})
         response = api_client.post(self.url, {'placebid': 160})
 
-        assert response.status_code == status.HTTP_400_BAD_REQUEST # Usuário não pode sobrepujar sua própria bid
+        assert response.status_code == status.HTTP_403_FORBIDDEN # Usuário não pode sobrepujar sua própria bid
 
         highest_bid = Bids.objects.filter(bidItem=auction_listing).order_by('-bid').first()
-        assert highest_bid.bid == 150 # Verificar bid no Banco
+        assert highest_bid.bid == Decimal('150') # Verificar bid no Banco
         assert highest_bid.bidUser == self.bidder # Verificar user no banco  
 
     def test_place_bid_increases_another_bid(self, db, api_client, auction_listing):
@@ -63,7 +64,7 @@ class TestPlaceBidAPI: #Zombies
 
         highest_bid = Bids.objects.filter(bidItem=auction_listing).order_by('-bid').first()
 
-        assert highest_bid.bid == 160.2 # Verifica se bid foi atualizada corretamente
+        assert highest_bid.bid == Decimal('160.20') # Verifica se bid foi atualizada corretamente
         assert highest_bid.bidUser == another_bidder # Verifica se user é atualizado
 
         # Verificar bids no Banco

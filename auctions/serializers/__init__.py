@@ -5,7 +5,7 @@ Organizadas por domínio.
 
 from .auctions import AuctionSerializer, CreateListingSerializer
 from .auth import LoginSerializer, RegisterSerializer
-from .bids import BidSerializer
+from .bids import BidSerializer, PlaceBidSerializer
 from .comments import CommentsSerializer, AddCommentSerializer
 from .watchlist import WatchlistSerializer, WatchlistAddAuctionSerializer
 from .categories import CategorySerializer
@@ -21,6 +21,7 @@ __all__ = [
     
     # Bids
     'BidSerializer',
+    'PlaceBidSerializer',
     
     # Comments
     'AddCommentSerializer',
