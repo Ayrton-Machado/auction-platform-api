@@ -4,10 +4,10 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
-from django.db import transaction
 
 from ..models import AuctionListing, Comments, Bids, Category
 from ..serializers import CategorySerializer, CreateListingSerializer, CommentsSerializer, BidSerializer, AuctionSerializer
+from ..services import AuctionService
 
 @extend_schema(
     summary="Buscar todas auctions",
@@ -21,7 +21,7 @@ class indexAPI(APIView):
     def get(self, request):
         auctions = AuctionListing.objects.all()
         if not auctions.exists():
-            return Response({"message": "No auctions available."}, status=status.HTTP_404_NOT_FOUND)
+            return Response({"message": "No auctions available."}, status=status.HTTP_200_OK)
         return Response({'auctions': list(auctions.values())})
 
 @extend_schema(
@@ -35,8 +35,6 @@ class indexAPI(APIView):
 )
 class CreateListingAPI(APIView):
     permission_classes = [IsAuthenticated]
-
-    
 
     def post(self, request):
         serializer = CreateListingSerializer(data=request.data, context={"request": request})
@@ -73,16 +71,15 @@ class ListingPageAPI(APIView):
         except AuctionListing.DoesNotExist:
             return Response({"error": "Listing not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        allComments = Comments.objects.filter(item=listingItem)
-        bidsItem = Bids.objects.filter(bidItem=listingItem)
+        allComments = Comments.objects.filter(listing=listingItem)
+        bidsItem = Bids.objects.filter(listing=listingItem)
         lastBid = bidsItem.last()
-        isOwner = request.user == listingItem.createdBy
+        isOwner = request.user == listingItem.created_by
 
         # Apenas define "win" se o leilão estiver fechado e houver um último lance
         win = False
         if listingItem.closed and lastBid is not None:
-            win = request.user == lastBid.bidUser
-
+            win = request.user == lastBid.user
 
         #data
         allCommentsData = CommentsSerializer(allComments, many=True).data
@@ -93,10 +90,10 @@ class ListingPageAPI(APIView):
 
         return Response({
             'listing': listingItemData,
-            'bidList': bidsItemData,
-            'bidAmount': bidAmount,
+            'bids': bidsItemData,
+            'amount': bidAmount,
             'win': win,
-            'isOwner': isOwner,
+            'is_owner': isOwner,
             'comments': allCommentsData
         }, status=status.HTTP_200_OK)
 
@@ -111,7 +108,7 @@ class ListingPageAPI(APIView):
 )
 class CategoriesAuctionsAPI(APIView):
     def get(self, request, selectedCategory):
-        category = Category.objects.filter(id = selectedCategory).first()
+        category = Category.objects.filter(id=selectedCategory).first()
         categoriesAuctions = AuctionListing.objects.filter(category=category)
 
         if category is None or not categoriesAuctions.exists():
@@ -137,37 +134,21 @@ class CategoriesAuctionsAPI(APIView):
 class CloseAuctionAPI(APIView):
     permission_classes = [IsAuthenticated]
 
-    @transaction.atomic
     def post(self, request, listing_id):
         listingItem = get_object_or_404(AuctionListing, id=listing_id)
-        lastBid = Bids.objects.filter(bidItem=listingItem).last()
-        listingItem.closed = True
-        listingItem.save()
-        close = listingItem.closed
-        if close == True:
-            if close == True and request.user == lastBid.bidUser:
-                winner = True
-            elif close == True and request.user != lastBid.bidUser:
-                winner = False
+        lastBid = Bids.objects.filter(listing=listingItem).last()
+        user = request.user
+        try: 
+            close_auction = AuctionService.close_auction(
+                auction=listingItem,
+                lastBid=lastBid
+            )
+
+            listingItem.refresh_from_db()
+
             return Response({
-                "error": "You may not close this auction."
-            }, status=status.HTTP_403_FORBIDDEN)
-        else:
-            return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
-        
-    def get(self, request, listing_id):
-        
-        listingItem = get_object_or_404(AuctionListing, id=listing_id)
-        lastBid = Bids.objects.filter(bidItem=listingItem).last()
-        listingItem.save()
-        close = listingItem.closed
-        if close:
-            if request.user == lastBid.bidUser:
-                winner = True
-            elif request.user != lastBid.bidUser:
-                winner = False
-            return Response({
-                "error": "You may not close this auction."
-            }, status=status.HTTP_403_FORBIDDEN)
-        else:
-            return Response({"message": "Auction closed successfully."}, status=status.HTTP_200_OK)
+                "message": "auction closed successfully."
+            }, status=status.HTTP_200_OK)
+
+        except ValueError as e:
+            pass

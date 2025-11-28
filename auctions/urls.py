@@ -8,6 +8,9 @@ urlpatterns = [
     path("auth/logout", views.LogoutAPI.as_view(), name="api-logout"),
     path("auth/register", views.RegisterAPI.as_view(), name="api-register"),
 
+    # User endpoints (soft_delete)
+    # Implementar futuramente
+
     # Auction endpoints
     path("auctions/", views.indexAPI.as_view(), name="api-auctions"),
     path('create_listing/', views.CreateListingAPI.as_view(), name='api-createListing'),

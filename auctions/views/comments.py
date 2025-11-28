@@ -25,7 +25,7 @@ class AddCommentAPI(APIView):
 
         serializer = AddCommentSerializer(
             data=request.data,
-            context={'request': request, "item": item}
+            context={'request': request, "listing": item}
         )
         if serializer.is_valid():
             serializer.save()

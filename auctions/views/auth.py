@@ -4,6 +4,8 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
+from django.views.decorators.csrf import csrf_exempt
+from django.utils.decorators import method_decorator
 
 from django.db import IntegrityError
 from ..serializers import LoginSerializer, RegisterSerializer
@@ -17,6 +19,8 @@ from ..serializers import LoginSerializer, RegisterSerializer
     },
     tags=['Authentication']
 )
+
+@method_decorator(csrf_exempt, name='dispatch')
 class LoginAPI(APIView):
     def post(self, request):
         serializer = LoginSerializer(data=request.data)

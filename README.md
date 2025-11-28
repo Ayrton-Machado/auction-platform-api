@@ -8,20 +8,59 @@
 > API completa para sistema de leilões online com **autenticação JWT, criação de anúncios, sistema de lances, watchlist e comentários**. 
 > Suporta **categorias, administração via Django Admin e controle de leilões ativos/fechados**.
 
-### Ajustes e melhorias
-O projeto ainda está em desenvolvimento e as próximas atualizações serão voltadas para as seguintes tarefas:
+### ✅ Concluído
+- [x] API REST com Django REST Framework
+- [x] Sistema de autenticação e registro
+- [x] CRUD completo de leilões
+- [x] Sistema de lances com validação
+- [x] Watchlist e comentários
+- [x] Testes unitários com pytest
+- [x] Documentação com drf-spectacular
 
-- [ ] Atualizar retorno de todos os endpoints.
-- [ ] Acrescentar testes em todo o projeto.
-- [ ] Integrar Postgres.
-- [ ] Implementar autenticação JWT.
+### 🚧 Em Desenvolvimento
+
+**Funcionalidades Core:**
+- [ ] Autenticação JWT (Substituir sessions)
+- [ ] Sistema de notificações em tempo real (WebSockets)
+- [ ] Paginação e filtros avançados
+- [ ] Upload de múltiplas imagens
+
+**Blockchain & Cripto:**
+- [ ] Integração com Web3.py para Ethereum
+- [ ] Suporte para Bitcoin via Lightning Network
+- [ ] Smart contracts para escrow de leilões
+- [ ] Carteira multi-signature
+- [ ] Conversão automática de moedas (Oracle)
 
 **IA de Confiança:**
-- [ ] Criar repositório separado no Hugging Face Hub.
-- [ ] Desenvolver modelo de análise de imagem no Jupyter.
-- [ ] Treinar modelo NLP para análise de descrições.
-- [ ] Publicar modelo treinado no Hugging Face Hub.
-- [ ] Integrar API do Hugging Face no endpoint de confiança.
+- [ ] Criar repositório no Hugging Face Hub
+- [ ] Modelo de análise de imagens (detectar produtos suspeitos)
+- [ ] Modelo NLP para descrições (detectar fraudes)
+- [ ] Sistema de score de confiabilidade
+- [ ] Publicar modelo treinado no HF Hub
+- [ ] Integrar API do Hugging Face
+
+**DevOps & Infraestrutura:**
+- [ ] Dockerização completa (Docker Compose)
+- [ ] CI/CD com GitHub Actions
+  - [ ] Testes automáticos em PRs
+  - [ ] Lint e formatação (black, flake8, isort)
+  - [ ] Build e push de imagens Docker
+  - [ ] Deploy automático em staging
+- [ ] Kubernetes para orquestração (opcional)
+- [ ] Monitoramento com Prometheus + Grafana
+
+**Deploy:**
+- [ ] Backend no DigitalOcean Droplet (ou Railway/Render)
+- [ ] PostgreSQL Managed Database
+- [ ] Redis para cache e Celery
+- [ ] DigitalOcean Spaces (S3-compatible) para imagens
+- [ ] Frontend no Vercel/Netlify
+- [ ] Domínio customizado + SSL (Let's Encrypt)
+- [ ] CDN para assets estáticos
+
+**Incrementar Cripto como Pagamento:**
+
 
 **Deploy e Infraestrutura:**
 - [ ] Configurar Droplet para backend Django.

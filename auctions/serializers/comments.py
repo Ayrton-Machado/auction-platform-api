@@ -16,6 +16,6 @@ class AddCommentSerializer(serializers.Serializer):
 
     def create(self, validated_data):
         validated_data['user'] = self.context['request'].user
-        validated_data['item'] = self.context['item']
+        validated_data['listing'] = self.context['listing']
 
         return Comments.objects.create(**validated_data)

@@ -2,20 +2,21 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from auctions.models import Category, User, AuctionListing, Bids
+from decimal import Decimal
 
-class TestCreateListing: # Zombies
+class TestCreateListing: # Zombies !
     @pytest.fixture(autouse=True)
     def setup(self, category):
         self.url = reverse('api-createListing')
         self.data = {
             "title": "Test Listing",
             "description": "This is a test listing",
-            "bidstart": 100,
-            "urlImage": "http://example.com/testimage.jpg",
+            "starting_bid": 100,
+            "image_url": "http://example.com/testimage.jpg",
             "category": category.id
         }
 
-    # Zero Cases
+    # Zero Cases !
     def test_create_listing_empty_data(self, authenticated_client):
         data = {}
         
@@ -33,7 +34,7 @@ class TestCreateListing: # Zombies
 
         assert AuctionListing.objects.count() == 0  # Verificar que não foi criado no banco
 
-    # One Cases
+    # One Cases !
     def test_create_listing_successful(self, authenticated_client, category, user):
         response = authenticated_client.post(self.url, self.data)
         
@@ -43,19 +44,21 @@ class TestCreateListing: # Zombies
         listing = AuctionListing.objects.get(title="Test Listing")
         assert listing.title == "Test Listing"
         assert listing.description == "This is a test listing"
-        assert listing.bidstart == 100
-        assert listing.urlImage == "http://example.com/testimage.jpg"
-        assert listing.createdBy == user
+        assert listing.starting_bid == 100
+        assert listing.image_url == "http://example.com/testimage.jpg"
+        assert listing.created_by == user
         assert listing.category == category
+        assert listing.winner is None
+        assert listing.winning_bid is None
 
-    # Boundary
+    # Boundary !
     def test_create_listing_invalid_input(self, authenticated_client):
         data = {
             "title": 5, # expects string
             "description": "This is a test listing",
-            "bidstart": 100,
-            "urlImage": "http://example.com/testimage.jpg",
-            "category": "10" # expects object
+            "starting_bid": 100,
+            "image_url": "http://example.com/testimage.jpg",
+            "category": "10" # expects int id
         }
 
         response = authenticated_client.post(self.url, data) # tenta enviar
@@ -68,8 +71,8 @@ class TestCreateListing: # Zombies
         data = {
             "title": "Test Listing",
             "description": "This is a test listing",
-            "bidstart": 100,
-            "urlImage": "http://example.com/testimage.jpg",
+            "starting_bid": 100,
+            "image_url": "http://example.com/testimage.jpg",
             "category": 9999 # doesn't exist
         }
 
@@ -81,8 +84,8 @@ class TestCreateListing: # Zombies
         data = {
             "title": "Test Listing",
             "description": "This is a test listing",
-            "bidstart": -10,
-            "urlImage": "http://example.com/testimage.jpg",
+            "starting_bid": -10, # neg. bid
+            "image_url": "http://example.com/testimage.jpg",
             "category": category.id
         }
 
@@ -94,8 +97,8 @@ class TestCreateListing: # Zombies
         data = {
             "title": "Test Listing",
             "description": "This is a test listing",
-            "bidstart": 0,
-            "urlImage": "http://example.com/testimage.jpg",
+            "starting_bid": 0,
+            "image_url": "http://example.com/testimage.jpg",
             "category": category.id
         }
 
@@ -107,8 +110,8 @@ class TestCreateListing: # Zombies
         data = {
             "title": "Test Listing",
             "description": "This is a test listing",
-            "bidstart": None,
-            "urlImage": "http://example.com/testimage.jpg",
+            "starting_bid": None,
+            "image_url": "http://example.com/testimage.jpg",
             "category": category.id
         }
 
@@ -116,7 +119,7 @@ class TestCreateListing: # Zombies
 
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    # Interface
+    # Interface !
     def test_create_listing_wrong_method(self, authenticated_client):
         response = authenticated_client.get(self.url)
 
@@ -129,11 +132,11 @@ class TestIndexView:
         
     def test_list_auctions_empty(self, authenticated_client):
         response = authenticated_client.get(self.url)
-        assert response.status_code == status.HTTP_404_NOT_FOUND
+        assert response.status_code == status.HTTP_200_OK
         
     def test_list_auctions_with_data(self, authenticated_client, auction_listing):
         response = authenticated_client.get(self.url)
-        assert AuctionListing.objects.filter(id=1).exists()
+        assert AuctionListing.objects.filter(title="Test Auction").exists()
         assert response.status_code == status.HTTP_200_OK
 
 class TestListingPageView:
@@ -145,7 +148,10 @@ class TestListingPageView:
         response = authenticated_client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
         assert 'listing' in response.data
-        assert 'bidList' in response.data
+        assert 'bids' in response.data
+        assert 'amount'in response.data
+        assert 'win'in response.data
+        assert 'is_owner'in response.data
         assert 'comments' in response.data
         
     def test_get_nonexistent_listing(self, authenticated_client):
@@ -154,68 +160,60 @@ class TestListingPageView:
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
 
-class TestCloseAuctionAPI: # Zombies
+class TestCloseAuctionAPI: # Zombies !
     @pytest.fixture(autouse=True)
-    def setup(self, db, user, auction_listing):
-        self.owner = user
-        self.bidder = User.objects.create_user(username="bidder", password="testpass123")
-        self.bid = Bids.objects.create(bidUser=self.bidder, bid=180, bidItem=auction_listing)
+    def setup(self, db, auction_listing):
         self.url = reverse('api-closeAuction', kwargs={'listing_id': auction_listing.id})
-        self.urlAuction = reverse('api-pageListing', kwargs={'listing_id': auction_listing.id})
 
-    # Zero Cases
+    # Zero Cases !
     def test_close_auction_nonexistent_listing(self, authenticated_client):
         url = reverse('api-closeAuction', kwargs={'listing_id': 5})
         response = authenticated_client.post(url)
         assert response.status_code == status.HTTP_404_NOT_FOUND
 
-    def test_close_auction_without_auth(self, api_client):
+    def test_close_auction_without_auth(self, api_client, auction_listing):
         response = api_client.post(self.url)
         assert response.status_code == status.HTTP_403_FORBIDDEN
-    
-    def test_close_auction_without_bid(self, authenticated_client, user, category, auction_listing):
-        auction = AuctionListing.objects.create(
-            title="Test Auction",
-            description="Test Description",
-            bidstart=100,
-            category=category,
-            createdBy=user
-        )
-        url = reverse('api-closeAuction', kwargs={'listing_id': auction.id})
-        response = authenticated_client.post(url)
-        assert response.status_code == status.HTTP_200_OK
-        
-        # Verificar se o leilão foi marcado como fechado
-        auction.refresh_from_db()
-        assert auction.closed
 
-    # One Cases
-    def test_close_auction_one_bid(self, authenticated_client, auction_listing):
+        auction_listing.refresh_from_db()
+        assert not auction_listing.closed # Verificar se o leilão não foi fechado
+
+    
+    def test_close_auction_without_bid(self, authenticated_client, auction_listing): 
+        response = authenticated_client.post(self.url)
+        assert response.status_code == status.HTTP_200_OK
+
+        # Verificar se o leilão foi marcado como fechado
+        auction_listing.refresh_from_db()
+        assert auction_listing.closed # Verificar se o leilão foi marcado como fechado
+        assert auction_listing.winner is None # Verificar que não há winner
+        assert auction_listing.winning_bid is None # Verificar que não há bid vencendo
+
+    # One Cases !
+    def test_close_auction_one_bid(self, authenticated_client, auction_listing, bid, alt_user):
         response = authenticated_client.post(self.url)
         assert response.status_code == status.HTTP_200_OK
         
-        # Verificar se o leilão foi marcado como fechado
         auction_listing.refresh_from_db()
-        assert auction_listing.closed
+        assert auction_listing.closed # Verificar se o leilão foi marcado como fechado
+        assert auction_listing.winner == alt_user # Verificar se winner foi definido de acordo com a bid
+        assert auction_listing.winning_bid == Decimal("150") # Verificar se bid vencendo foi atualizada
     
-    def test_close_auction_one_bid_owner_not_winner(self, authenticated_client):
+    def test_close_auction_one_bid_owner_not_winner(self, authenticated_client, auction_listing, bid, user):
 
         responseOwner = authenticated_client.post(self.url) # Fecha listing como owner
         
         assert responseOwner.status_code == status.HTTP_200_OK # Verifica se fechou corretamente 
         
-        assert responseOwner.data['winner'] == False # Garante que o owner não é o vencedor, pois houve a bid maior que a bidstart
-    
-    # Boundary
-    def test_close_auction_not_owner(self, api_client, auction_listing):
-        # criar novo user
-        another_user = User.objects.create_user(
-            username="another_user",
-            email="anotheruser@teste.com",
-            password="12345"
-        )
+        auction_listing.refresh_from_db()
+        assert auction_listing.closed is True # verifica se leilao foi fechado
+        assert auction_listing.winner != user # Verifica se o owner não é o vencedor
+        assert auction_listing.winning_bid == Decimal("150") # Verifica se o valor vencendo é o mesmo que o dado em lance
+
+    # Boundary !
+    def test_close_auction_not_owner(self, api_client, auction_listing, alt_user):
         
-        api_client.force_authenticate(user=another_user) # logar novo user
+        api_client.force_authenticate(user=alt_user) # logar novo user
         
         responseAnotherUser = api_client.post(self.url) # tenta fechar auction
         

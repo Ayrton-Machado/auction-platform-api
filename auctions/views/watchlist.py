@@ -19,7 +19,7 @@ class WatchlistAddAuctionAPI(APIView):
     def post(self, request, listing_id):
         user = request.user
         item = AuctionListing.objects.get(id=listing_id)
-        watchlist = Watchlist(user=user, item=item)
+        watchlist = Watchlist(user=user, listing=item)
         watchlist.save()
 
         return Response({

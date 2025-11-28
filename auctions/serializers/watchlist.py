@@ -9,7 +9,7 @@ class WatchlistSerializer(serializers.ModelSerializer):
 class WatchlistAddAuctionSerializer(serializers.Serializer):
     class Meta:
         model = Watchlist
-        fields = ["user", "item"]
+        fields = ["user", "listing"]
     
     def create(self, validated_data):
-        validated_data['createdBy'] = self.context['request'].user
+        validated_data['created_by'] = self.context['request'].user

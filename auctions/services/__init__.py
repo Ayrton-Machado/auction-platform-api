@@ -1,7 +1,8 @@
 from .bids import BidService
+from .auction import AuctionService
 
 
 __all__ = [
-    # Authentication
     'BidService',
+    'AuctionService'
 ]

@@ -25,8 +25,16 @@ def user(db):
     )
 
 @pytest.fixture
+def alt_user(db):
+    return User.objects.create_user(
+        username="alt_testuser",
+        email="alt_teste@teste.com",
+        password="123456"
+    )
+
+@pytest.fixture
 def category(db):
-    return Category.objects.create(categories="Test Category")
+    return Category.objects.create(name="Test Category")
 
 @pytest.fixture
 def authenticated_client(api_client, user):
@@ -36,18 +44,18 @@ def authenticated_client(api_client, user):
 @pytest.fixture
 def auction_listing(db, category, user):
     return AuctionListing.objects.create(
-        id=1,
         title="Test Auction",
         description="Test Description",
-        bidstart=100,
+        starting_bid=100,
+        image_url="https://pop.proddigital.com.br/wp-content/uploads/sites/8/2021/07/naruto-1.jpg",
         category=category,
-        createdBy=user
+        created_by=user
     )
 
 @pytest.fixture
-def watchlist_listing(db, user, auction_listing):
-    return Watchlist.objects.create(user=user, item=auction_listing)
+def watchlist_listing(db, alt_user, auction_listing):
+    return Watchlist.objects.create(user=alt_user, listing=auction_listing)
 
 @pytest.fixture
-def bid(db, user, auction_listing):
-    return Bids.objects.create(bidUser=user, bid=150, bidItem=auction_listing)
+def bid(db, alt_user, auction_listing):
+    return Bids.objects.create(user=alt_user, amount=150, listing=auction_listing)

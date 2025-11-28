@@ -2,6 +2,7 @@ import pytest
 from django.urls import reverse
 from rest_framework import status
 from auctions.models import User
+from django.utils import timezone
 
 class TestLoginView: #Zombies
 
@@ -125,12 +126,35 @@ class TestRegisterView: #Zombies
         response = api_client.post(self.url, self.user)
 
         assert response.status_code == status.HTTP_201_CREATED
+        assert User.objects.filter(username="testuser").exists()
         assert "user" in response.data
         assert "testuser" in response.data["user"]["username"]
-        assert User.objects.filter(username="testuser").exists()
-        
+
         user = User.objects.get(username="testuser")
+
+        assert user.created_at is not None
+        assert user.deleted_at is None
         assert user.check_password("secret123")
+
+    def test_register_sets_created_at(self, api_client):
+        """Testa se created_at é definido automaticamente no registro"""
+        before_creation = timezone.now()
+        
+        response = api_client.post(self.url, {
+            "username": "newuser",
+            "email": "newuser@test.com",
+            "password": "securepass123",
+            "confirmation": "securepass123"
+        })
+        
+        after_creation = timezone.now()
+        
+        assert response.status_code == status.HTTP_201_CREATED
+        
+        # Verificar no banco
+        user = User.objects.get(username="newuser")
+        assert user.created_at is not None
+        assert before_creation <= user.created_at <= after_creation
 
     def test_register_password_mismatch(self, api_client):
         user_mismatch_password = self.user.copy()
@@ -146,7 +170,7 @@ class TestRegisterView: #Zombies
         assert response.status_code == status.HTTP_201_CREATED # Verifica criação para não haver aprovação com erro fantasma
 
         user_email_case_insensitive = self.user.copy()
-        user_email_case_insensitive["username"] == "newuser"
+        user_email_case_insensitive["username"] = "newuser"
         user_email_case_insensitive["email"] = "JohN@mail.com"
 
         response = api_client.post(self.url, user_email_case_insensitive) # Tenta criar com email ja existente
@@ -238,7 +262,7 @@ class TestRegisterView: #Zombies
 
     def test_register_xss_attempt(self, api_client):
         user_xss = self.user.copy()
-        user_xss["username"] == "<script>alert('xss')</script>"
+        user_xss["username"] = "<script>alert('xss')</script>"
 
         response = api_client.post(self.url, user_xss)
 
