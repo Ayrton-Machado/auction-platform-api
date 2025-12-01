@@ -10,17 +10,18 @@ class TestWatchlistAPI:
         self.urlRemove = reverse('api-watchlistRemove')
         self.url = reverse('api-watchlistAuction')
         
-    def test_add_to_watchlist(self, authenticated_client, user):
+    def test_add_to_watchlist(self, authenticated_client, auction_listing, user):
         response = authenticated_client.post(self.urlListing)
         assert response.status_code == status.HTTP_200_OK
         
         assert Watchlist.objects.filter(
             user=user, 
-            listing=self.auction_listing
+            listing=auction_listing
         ).exists()
 
-    def test_view_watchlist(self, authenticated_client, watchlist_listing):
-        response = authenticated_client.get(self.url)
+    def test_view_watchlist(self, api_client, watchlist_listing, alt_user):
+        api_client.force_authenticate(alt_user)
+        response = api_client.get(self.url)
         assert response.status_code == status.HTTP_200_OK
         
     def test_remove_from_watchlist(self, watchlist_listing, authenticated_client):

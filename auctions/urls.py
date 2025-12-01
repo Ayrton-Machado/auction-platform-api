@@ -3,13 +3,13 @@ from django.urls import path
 from auctions import views
 
 urlpatterns = [
+    # User endpoints
+    path("user/delete", views.softDeleteUserAPI.as_view(), name="api-softDeleteUser"),
+    
     # Auth endpoints
     path("auth/login", views.LoginAPI.as_view(), name="api-login"),
     path("auth/logout", views.LogoutAPI.as_view(), name="api-logout"),
     path("auth/register", views.RegisterAPI.as_view(), name="api-register"),
-
-    # User endpoints (soft_delete)
-    # Implementar futuramente
 
     # Auction endpoints
     path("auctions/", views.indexAPI.as_view(), name="api-auctions"),

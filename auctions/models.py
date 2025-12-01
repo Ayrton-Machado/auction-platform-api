@@ -4,14 +4,8 @@ from django.utils import timezone
 
 class User(AbstractUser):
     deleted_at = models.DateTimeField(null=True, blank=True)
+    deleted_reason = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
-
-    def soft_delete(self):
-        if not self.deleted_at:  # Só define se ainda não foi deletado
-            self.deleted_at = timezone.now()
-            self.is_active = False  # Impede login
-            self.save()
-        return self.deleted_at
 
 class Category(models.Model):
     name = models.CharField(max_length=64, unique=True)

@@ -34,7 +34,7 @@ class WatchlistAddAuctionAPI(APIView):
         404: {'description': "Lista vazia."},
         400: {'description': "Erro ao buscar."}
     },
-    tags=['Wathclist']
+    tags=['Watchlist']
 )
 class WatchlistAuctionAPI(APIView):
     def get(self, request):

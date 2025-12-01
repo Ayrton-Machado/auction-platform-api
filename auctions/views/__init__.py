@@ -3,6 +3,7 @@ Views da aplicação Auctions.
 Organizadas por domínio.
 """
 
+from .user import softDeleteUserAPI
 from .auth import LoginAPI, RegisterAPI, LogoutAPI
 from .auctions import CreateListingAPI, indexAPI, ListingPageAPI, CloseAuctionAPI, CategoriesAuctionsAPI
 from .bids import PlaceBidAPI
@@ -11,6 +12,9 @@ from .comments import AddCommentAPI
 from .watchlist import WatchlistRemoveAPI, WatchlistAuctionAPI, WatchlistAddAuctionAPI
 
 __all__ = [
+    # User
+    'softDeleteUserAPI',
+
     # Authentication
     'LoginAPI',
     'RegisterAPI',

@@ -6,11 +6,6 @@ class PlaceBidSerializer(serializers.Serializer):
         max_digits=10,
         decimal_places=2,
         min_value=0.01,
-        error_messages={
-            'required': 'Bid amount is required.',
-            'invalid': 'Please enter a valid number.',
-            'min_value': 'Bid must be greater than zero.'
-        }
     )
 
 class BidSerializer(serializers.ModelSerializer):
