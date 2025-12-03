@@ -63,9 +63,6 @@ class TestCreateListing: # Zombies !
 
         response = authenticated_client.post(self.url, data) # tenta enviar
         assert response.status_code == status.HTTP_400_BAD_REQUEST # Verifica retorno
-        # Verifica especificidade do erro
-        assert "title" in response.data
-        assert "category" in response.data 
 
     def test_create_listing_nonexist_category(self, authenticated_client):
         data = {

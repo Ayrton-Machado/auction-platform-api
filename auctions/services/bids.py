@@ -25,6 +25,6 @@ class BidService:
             defaults={'amount': amount}
         )
         
-        listingData.starting_bid = amount
+        listingData.winning_bid = amount
         listingData.save()
         return bid_obj

@@ -50,6 +50,6 @@ class TestAddComment:
     
     def test_add_comment_max_length(self, authenticated_client):
         """Testa comentário muito longo"""
-        long_comment = "a" * 250
+        long_comment = "a" * 750
         response = authenticated_client.post(self.url, {"comment": long_comment})
         assert response.status_code == status.HTTP_400_BAD_REQUEST

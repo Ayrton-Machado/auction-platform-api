@@ -13,9 +13,3 @@ class AddCommentSerializer(serializers.Serializer):
         required=True,
         trim_whitespace=True
     )
-
-    def create(self, validated_data):
-        validated_data['user'] = self.context['request'].user
-        validated_data['listing'] = self.context['listing']
-
-        return Comments.objects.create(**validated_data)

@@ -106,10 +106,11 @@ class TestPlaceBidAPI: #Zombies
         api_client.force_authenticate(user=alt_user)
 
         url = reverse('api-closeAuction', kwargs={'listing_id': auction_listing.id})
-        authenticated_client.post(url) # Fecha Leilao
+        api_client.post(url) # Fecha Leilao
 
         auction_listing.refresh_from_db() # Verificar no Banco
         assert auction_listing.closed is True
+        
         response = api_client.post(self.url, {'placebid': 150}) # Enviar bid com leilao fechado
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

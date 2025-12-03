@@ -9,8 +9,12 @@ from .bids import BidSerializer, PlaceBidSerializer
 from .comments import CommentsSerializer, AddCommentSerializer
 from .watchlist import WatchlistSerializer, WatchlistAddAuctionSerializer
 from .categories import CategorySerializer
+from .user import DeleteUserSerializer
 
 __all__ = [
+    # User
+    'DeleteUserSerializer',
+
     # Authentication
     'LoginSerializer',
     'RegisterSerializer',

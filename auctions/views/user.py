@@ -6,6 +6,7 @@ from auctions.services import UserService
 from auctions.serializers.user import DeleteUserSerializer
 from django.shortcuts import get_object_or_404
 from rest_framework.permissions import IsAuthenticated
+from django.core.exceptions import ValidationError, PermissionDenied
 
 class softDeleteUserAPI(APIView):
     permission_classes = [IsAuthenticated]
@@ -17,20 +18,20 @@ class softDeleteUserAPI(APIView):
 
         if serializer.is_valid():
             try:
-                response = UserService.delete_user(
+                UserService.delete_user(
                     user=user,
                     reason=serializer.validated_data["reason"],
                     requesting_user=request.user
                 )
                 return Response({"message": "User deleted successfully"}, status=status.HTTP_200_OK)
 
-            except ValueError as e:
+            except ValidationError as e:
                 return Response(
                     {"error": str(e)},
                     status=status.HTTP_400_BAD_REQUEST
                 )
 
-            except PermissionError as e:
+            except PermissionDenied as e:
                 return Response(
                     {"error": str(e)},
                     status=status.HTTP_403_FORBIDDEN

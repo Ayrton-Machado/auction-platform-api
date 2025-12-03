@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models import Category, AuctionListing
+from decimal import Decimal
 
 class AuctionSerializer(serializers.ModelSerializer):
     class Meta:
@@ -12,9 +13,3 @@ class CreateListingSerializer(serializers.ModelSerializer):
     class Meta:
         model = AuctionListing
         fields = ["title", "description", "starting_bid", "image_url", "category"]
-    
-    def create(self, validated_data):
-        if 'category' not in validated_data or validated_data['category'] is None:
-            validated_data['category'] = Category.objects.get(name="Outro")
-        validated_data['created_by'] = self.context['request'].user
-        return AuctionListing.objects.create(**validated_data)

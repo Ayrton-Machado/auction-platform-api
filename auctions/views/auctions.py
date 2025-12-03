@@ -4,7 +4,7 @@ from rest_framework.response import Response
 from rest_framework import status
 from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
-
+from django.core.exceptions import ValidationError, PermissionDenied
 from ..models import AuctionListing, Comments, Bids, Category
 from ..serializers import CategorySerializer, CreateListingSerializer, CommentsSerializer, BidSerializer, AuctionSerializer
 from ..services import AuctionService
@@ -28,7 +28,7 @@ class indexAPI(APIView):
     summary="Criar Auction",
     request=CreateListingSerializer,
     responses={
-        200: {'description': "Auction criada com sucesso"},
+        201: {'description': "Create Listing Successful."},
         400: {'description': "Erro ao criar listing."}
     },
     tags=['Auctions']
@@ -37,20 +37,24 @@ class CreateListingAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request):
-        serializer = CreateListingSerializer(data=request.data, context={"request": request})
+        listing_serializer = CreateListingSerializer(data=request.data, context={"request": request})
 
-        if serializer.is_valid():
+        if listing_serializer.is_valid():
             try:
-                serializer.save()
+                AuctionService.create_listing(
+                    listing_data = listing_serializer,
+                    user=request.user
+                )
+
                 return Response({
-                    "message": "Create Listing Successful.",
-                    "listing": serializer.data
+                    "message": "Create Listing Successful."
                 }, status=status.HTTP_201_CREATED)
             except Exception as e:
-                return Response({"error": "Error saving to the database."})
+                return Response({
+                    "error": "Error saving to the database."}, status=status.HTTP_400_BAD_REQUEST)
         return Response({
             "message": "Invalid data. Please correct the errors and try again.",
-            "errors": serializer.errors
+            "errors": listing_serializer.errors
         }, status=status.HTTP_400_BAD_REQUEST)
 
 @extend_schema(
@@ -135,20 +139,32 @@ class CloseAuctionAPI(APIView):
     permission_classes = [IsAuthenticated]
 
     def post(self, request, listing_id):
-        listingItem = get_object_or_404(AuctionListing, id=listing_id)
-        lastBid = Bids.objects.filter(listing=listingItem).last()
-        user = request.user
+        listing = get_object_or_404(AuctionListing, id=listing_id)
+        last_bid = Bids.objects.filter(listing=listing).last()
+
+        last_bid_amount = last_bid.amount if last_bid else None
+        last_bid_user = last_bid.user if last_bid else None
+
         try: 
             close_auction = AuctionService.close_auction(
-                auction=listingItem,
-                lastBid=lastBid
+                listing=listing,
+                last_bid_user=last_bid_user,
+                last_bid_amount=last_bid_amount,
+                requesting_user=request.user
             )
 
-            listingItem.refresh_from_db()
-
             return Response({
-                "message": "auction closed successfully."
+                "message": "Auction closed successfully."
             }, status=status.HTTP_200_OK)
 
-        except ValueError as e:
-            pass
+        except ValidationError as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_400_BAD_REQUEST
+            )
+
+        except PermissionDenied as e:
+            return Response(
+                {"error": str(e)},
+                status=status.HTTP_403_FORBIDDEN
+            )

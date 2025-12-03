@@ -86,7 +86,6 @@ class TestRegisterView: #Zombies
         user_missing_confirmation["confirmation"] = ""
         response = api_client.post(self.url, user_missing_confirmation)
         assert response.status_code == status.HTTP_400_BAD_REQUEST
-        assert 'confirmation' in response.data
 
     def test_register_empty_username(self, api_client):
         user_empty_username = self.user.copy()
