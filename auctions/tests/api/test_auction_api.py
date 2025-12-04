@@ -37,7 +37,7 @@ class TestCreateListing: # Zombies !
     # One Cases !
     def test_create_listing_successful(self, authenticated_client, category, user):
         response = authenticated_client.post(self.url, self.data)
-        
+
         assert response.status_code == status.HTTP_201_CREATED
         
         assert AuctionListing.objects.filter(title="Test Listing").exists()
@@ -146,10 +146,8 @@ class TestListingPageView:
         assert response.status_code == status.HTTP_200_OK
         assert 'listing' in response.data
         assert 'bids' in response.data
-        assert 'amount'in response.data
-        assert 'win'in response.data
-        assert 'is_owner'in response.data
         assert 'comments' in response.data
+        assert 'count_bids' in response.data
         
     def test_get_nonexistent_listing(self, authenticated_client):
         url = reverse('api-pageListing', kwargs={'listing_id': 9999})

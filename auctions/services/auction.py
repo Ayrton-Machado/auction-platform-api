@@ -25,9 +25,15 @@ class AuctionService:
     @staticmethod
     @transaction.atomic
     def create_listing(listing_data, user):
-        print(listing_data)
         if 'category' not in listing_data or listing_data['category'] is None:
-            listing_data['category'] = Category.objects.get(name="Outro")
+            category, created = Category.objects.get_or_create(
+                name__iexact = "Outro",
+                defaults={"name": "Outro"}
+            )
+            listing_data['category'] = category
+
+        if listing_data['starting_bid'] <= 0:
+            raise ValidationError("Your starting bid need to be more than zero.")
 
         listing_data['created_by'] = user
         auction_obj = AuctionListing.objects.create(**listing_data)

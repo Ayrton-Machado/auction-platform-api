@@ -15,7 +15,7 @@ class UserService:
 
         user.deleted_at = timezone.now()
         user.is_active = False  # Impede login
-        user.deletion_reason = reason
+        user.deleted_reason = reason
         user.save()
         return user.deleted_at
         

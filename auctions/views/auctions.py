@@ -42,16 +42,19 @@ class CreateListingAPI(APIView):
         if listing_serializer.is_valid():
             try:
                 AuctionService.create_listing(
-                    listing_data = listing_serializer,
+                    listing_data = listing_serializer.validated_data,
                     user=request.user
                 )
 
                 return Response({
                     "message": "Create Listing Successful."
                 }, status=status.HTTP_201_CREATED)
-            except Exception as e:
+
+            except ValidationError as e:
                 return Response({
-                    "error": "Error saving to the database."}, status=status.HTTP_400_BAD_REQUEST)
+                    "error": str(e)
+                }, status=status.HTTP_400_BAD_REQUEST)
+            
         return Response({
             "message": "Invalid data. Please correct the errors and try again.",
             "errors": listing_serializer.errors
@@ -71,34 +74,25 @@ class ListingPageAPI(APIView):
 
     def get(self, request, listing_id):
         try:
-            listingItem = AuctionListing.objects.get(id=listing_id)
+            listing = AuctionListing.objects.get(id=listing_id)
         except AuctionListing.DoesNotExist:
             return Response({"error": "Listing not found"}, status=status.HTTP_404_NOT_FOUND)
 
-        allComments = Comments.objects.filter(listing=listingItem)
-        bidsItem = Bids.objects.filter(listing=listingItem)
-        lastBid = bidsItem.last()
-        isOwner = request.user == listingItem.created_by
+        # Busca dados
+        comments = Comments.objects.filter(listing=listing)
+        listing_bids = Bids.objects.filter(listing=listing)
 
-        # Apenas define "win" se o leilão estiver fechado e houver um último lance
-        win = False
-        if listingItem.closed and lastBid is not None:
-            win = request.user == lastBid.user
-
-        #data
-        allCommentsData = CommentsSerializer(allComments, many=True).data
-        bidsItemData = BidSerializer(bidsItem, many=True).data
-        listingItemData = AuctionSerializer(listingItem).data
-        bidAmount = bidsItem.count()
-
+        # Validação e Sanitização para JSON
+        comments = CommentsSerializer(comments, many=True).data
+        count_bids = listing_bids.count()
+        listing_bids = BidSerializer(listing_bids, many=True).data
+        listing_json = AuctionSerializer(listing).data
 
         return Response({
-            'listing': listingItemData,
-            'bids': bidsItemData,
-            'amount': bidAmount,
-            'win': win,
-            'is_owner': isOwner,
-            'comments': allCommentsData
+            'listing': listing_json,
+            'bids': listing_bids,
+            'count_bids': count_bids,
+            'comments': comments
         }, status=status.HTTP_200_OK)
 
 
@@ -140,7 +134,7 @@ class CloseAuctionAPI(APIView):
 
     def post(self, request, listing_id):
         listing = get_object_or_404(AuctionListing, id=listing_id)
-        last_bid = Bids.objects.filter(listing=listing).last()
+        last_bid = Bids.objects.filter(listing=listing).order_by('-created_at').first()
 
         last_bid_amount = last_bid.amount if last_bid else None
         last_bid_user = last_bid.user if last_bid else None

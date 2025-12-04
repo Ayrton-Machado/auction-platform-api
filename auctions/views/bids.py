@@ -29,7 +29,7 @@ class PlaceBidAPI(APIView):
 
         # Valida dados
         listingItem = get_object_or_404(AuctionListing, id=listing_id)
-
+    
         try:
             place_bid = BidService.place_bid(
                 listingData=listingItem, 

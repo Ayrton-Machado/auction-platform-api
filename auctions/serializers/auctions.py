@@ -7,7 +7,6 @@ class AuctionSerializer(serializers.ModelSerializer):
         model = AuctionListing
         fields = '__all__'  # Ou liste campos específicos: ['id', 'title', ...]
 
-
 class CreateListingSerializer(serializers.ModelSerializer):
 
     class Meta:
