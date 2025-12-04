@@ -102,15 +102,14 @@ class TestPlaceBidAPI: #Zombies
         response = api_client.post(self.url, {'placebid': 0}) # Enviar bid 0
         assert response.status_code == status.HTTP_400_BAD_REQUEST # Bid deve ser maior que 0
 
-    def test_place_bid_on_closed_auction(self, api_client, authenticated_client, auction_listing, alt_user):
-        api_client.force_authenticate(user=alt_user)
-
+    def test_place_bid_on_closed_auction(self, api_client, auction_listing, authenticated_client, alt_user):
         url = reverse('api-closeAuction', kwargs={'listing_id': auction_listing.id})
-        api_client.post(url) # Fecha Leilao
+        authenticated_client.post(url) # Fecha Leilao
 
         auction_listing.refresh_from_db() # Verificar no Banco
         assert auction_listing.closed is True
         
+        api_client.force_authenticate(user=alt_user)
         response = api_client.post(self.url, {'placebid': 150}) # Enviar bid com leilao fechado
         assert response.status_code == status.HTTP_400_BAD_REQUEST
 

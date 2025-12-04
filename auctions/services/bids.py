@@ -5,26 +5,30 @@ from ..models import Bids
 class BidService:        
     @staticmethod
     @transaction.atomic
-    def place_bid(listingData, user, amount):
-        if listingData.created_by == user:
+    def place_bid(listing, user, amount):
+        if listing.created_by == user:
             raise PermissionError("Owner cannot bid on own auction.")
         
-        highest_bid = Bids.objects.filter(listing=listingData).order_by('-amount').first()
+        highest_bid = Bids.objects.filter(listing=listing).order_by('-amount').first()
         if highest_bid and highest_bid.user == user:
             raise PermissionError("User cannot increase your own bid, if that is the highest.")
 
-        if amount <= listingData.starting_bid:
-            raise ValueError(f"Bid must be higher than current bid of R$ {listingData.starting_bid}.")
+        if listing.winning_bid:
+            if amount <= listing.winning_bid:
+                raise ValueError(f"Bid must be higher than current bid of R$ {listing.winning_bid}.")
 
-        if listingData.closed:
+        if amount <= listing.starting_bid:
+            raise ValueError(f"Bid must be higher than current bid of R$ {listing.starting_bid}.")
+
+        if listing.closed:
             raise ValueError("Auction is closed.")
         
         bid_obj, created = Bids.objects.update_or_create(
             user=user,
-            listing=listingData,
+            listing=listing,
             defaults={'amount': amount}
         )
         
-        listingData.winning_bid = amount
-        listingData.save()
+        listing.winning_bid = amount
+        listing.save()
         return bid_obj

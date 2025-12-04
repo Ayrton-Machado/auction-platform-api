@@ -28,21 +28,21 @@ class PlaceBidAPI(APIView):
         serializer.is_valid(raise_exception=True)
 
         # Valida dados
-        listingItem = get_object_or_404(AuctionListing, id=listing_id)
-    
+        listing = get_object_or_404(AuctionListing, id=listing_id)
+
         try:
             place_bid = BidService.place_bid(
-                listingData=listingItem, 
+                listing=listing, 
                 user=request.user, 
                 amount=serializer.validated_data["placebid"]
             )
 
-            listingItem.refresh_from_db()
+            listing.refresh_from_db()
 
             return Response({
                 "message": "Bid placed successfully.",
                 "amount": str(place_bid.amount),
-                "current_highest": str(listingItem.starting_bid)
+                "current_highest": str(listing.starting_bid)
             }, status=status.HTTP_200_OK)
         
         except ValueError as e:
