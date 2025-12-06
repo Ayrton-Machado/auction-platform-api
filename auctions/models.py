@@ -3,9 +3,23 @@ from django.db import models
 from django.utils import timezone 
 
 class User(AbstractUser):
+    email = models.EmailField(blank=False)
+
     deleted_at = models.DateTimeField(null=True, blank=True)
     deleted_reason = models.CharField(max_length=255, blank=True, default='')
     created_at = models.DateTimeField(auto_now_add=True)
+
+    class Meta:
+        constraints = [
+            models.UniqueConstraint(
+                models.functions.Lower('username'),
+                name='unique_username_ci'
+            ),
+            models.UniqueConstraint(
+                models.functions.Lower('email'),
+                name='unique_email_ci'
+            )
+        ]
 
 class Category(models.Model):
     name = models.CharField(max_length=64, unique=True)

@@ -12,14 +12,6 @@ class RegisterSerializer(serializers.ModelSerializer):
         model = User
         fields = ["username", "email", "password", "confirmation"]
         extra_kwargs = {
+            "username": {"min_length": 3},
             "password": {"write_only": True}
         }
-
-    def create(self, validated_data):
-        # Garante que a senha seja criptografada
-        user = User.objects.create_user(
-            username=validated_data["username"],
-            email=validated_data["email"],
-            password=validated_data["password"]
-        )
-        return user

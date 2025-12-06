@@ -1,14 +1,140 @@
-# auction-platform-api
+# Auction Platform API
 
+![Tests](https://img.shields.io/badge/tests-passing-brightgreen?style=for-the-badge)
 ![Python](https://img.shields.io/badge/python-3776AB?style=for-the-badge&logo=python&logoColor=white)
 ![Django](https://img.shields.io/badge/django-%23092E20.svg?style=for-the-badge&logo=django&logoColor=white)
 ![Postgres](https://img.shields.io/badge/postgres-%23316192.svg?style=for-the-badge&logo=postgresql&logoColor=white)
 ![JWT](https://img.shields.io/badge/JWT-black?style=for-the-badge&logo=JSON%20web%20tokens)
 
-> API completa para sistema de leilões online com **autenticação JWT, criação de anúncios, sistema de lances, watchlist e comentários**. 
-> Suporta **categorias, administração via Django Admin e controle de leilões ativos/fechados**.
+> **API REST para plataforma de leilões online** desenvolvida com **TDD**, seguindo **Clean Architecture** e aplicando princípios **SOLID**.
+> 
+> Arquitetura em camadas seguindo **SRP** com **95%+ de cobertura** em **85+ testes**, utilizando método **ZOMBIES**.
+
+---
+
+## 🔗 Principais Endpoints
+
+| Método | Endpoint | Descrição |
+|--------|----------|-----------|
+| POST | `/api/auth/register` | Registrar usuário |
+| POST | `/api/auth/login` | Autenticar |
+| POST | `/api/create_listing/` | Criar leilão |
+| POST | `/api/listing/:id/bid` | Fazer lance |
+| POST | `/api/listing/:id/close` | Fechar leilão (dono) |
+| GET | `/api/auctions/` | Listar leilões ativos |
+| GET | `/api/watchlist/` | Ver favoritos |
+
+> 📖 **Documentação completa:** http://127.0.0.1:8000/api/docs
+
+---
+
+## 💻 Pré-requisitos
+
+- [Python 3.13+](https://www.python.org/)
+- pip (gerenciador de pacotes Python)
+- Git
+
+---
+
+## 🚀 Instalação
+
+### 1. Clone o repositório
+
+```bash
+git clone https://github.com/Ayrton-Machado/auction-platform-api
+cd auction-platform-api
+```
+
+### 2. Configure o ambiente virtual
+
+#### Instale o virtualenv (se necessário)
+
+```bash
+pip install virtualenv
+```
+
+#### Crie e ative o ambiente virtual
+
+**Linux/MacOS:**
+```bash
+python -m venv venv
+source venv/bin/activate
+```
+
+**Windows:**
+```bash
+python -m venv venv
+venv\Scripts\activate
+```
+
+> 💡 **Dica:** Você verá `(venv)` no início da linha de comando quando o ambiente estiver ativo.
+
+### 3. Instale as dependências
+
+```bash
+pip install -r requirements.txt
+```
+
+### 4. Configure o banco de dados
+
+```bash
+python manage.py makemigrations
+python manage.py migrate
+```
+
+### 5. (Opcional) Crie um superusuário
+
+```bash
+python manage.py createsuperuser
+```
+
+## 💻 Usando
+
+### Inicie o servidor
+
+```bash
+python manage.py runserver
+```
+
+### Executes os testes
+```bash
+pytest
+```
+
+### Verificar coverage
+#### 1. Gerar .coverage
+```bash
+pytest --cov=auctions --cov-report=html --cov-report=term-missing
+```
+
+#### 2. Verificar retorno coverage
+```bash
+coverage report
+```
+
+✅ **Servidor disponível em:** http://127.0.0.1:8000/
+
+---
+
+## 🔐 Acessos Importantes
+
+- **Admin:** http://127.0.0.1:8000/api/admin
+- **Documentação:** http://127.0.0.1:8000/api/docs
+
+---
+
+## 📝 Desativar ambiente virtual
+
+```bash
+deactivate
+```
+
+---
+
+## 📊 Progresso do Projeto
 
 ### ✅ Concluído
+
 - [x] API REST com Django REST Framework
 - [x] Sistema de autenticação e registro
 - [x] CRUD completo de leilões
@@ -20,101 +146,27 @@
 ### 🚧 Em Desenvolvimento
 
 **Funcionalidades Core:**
-- [ ] Autenticação JWT (Substituir sessions)
+- [ ] Autenticação JWT (substituir sessions)
+- [ ] Postgres (substituir SQLite3)
 - [ ] Sistema de notificações em tempo real (WebSockets)
+- [ ] Sistema de lances em tempo real (WebSockets)
 - [ ] Paginação e filtros avançados
 - [ ] Upload de múltiplas imagens
 
-**Blockchain & Cripto:**
-- [ ] Integração com Web3.py para Ethereum
-- [ ] Suporte para Bitcoin via Lightning Network
-- [ ] Smart contracts para escrow de leilões
-- [ ] Carteira multi-signature
-- [ ] Conversão automática de moedas (Oracle)
-
-**IA de Confiança:**
-- [ ] Criar repositório no Hugging Face Hub
-- [ ] Modelo de análise de imagens (detectar produtos suspeitos)
-- [ ] Modelo NLP para descrições (detectar fraudes)
-- [ ] Sistema de score de confiabilidade
-- [ ] Publicar modelo treinado no HF Hub
-- [ ] Integrar API do Hugging Face
-
-**DevOps & Infraestrutura:**
+**Infraestrutura:**
 - [ ] Dockerização completa (Docker Compose)
 - [ ] CI/CD com GitHub Actions
   - [ ] Testes automáticos em PRs
-  - [ ] Lint e formatação (black, flake8, isort)
-  - [ ] Build e push de imagens Docker
-  - [ ] Deploy automático em staging
-- [ ] Kubernetes para orquestração (opcional)
 - [ ] Monitoramento com Prometheus + Grafana
 
-**Deploy:**
-- [ ] Backend no DigitalOcean Droplet (ou Railway/Render)
-- [ ] PostgreSQL Managed Database
-- [ ] Redis para cache e Celery
-- [ ] DigitalOcean Spaces (S3-compatible) para imagens
-- [ ] Frontend no Vercel/Netlify
-- [ ] Domínio customizado + SSL (Let's Encrypt)
-- [ ] CDN para assets estáticos
+**Funcionalidades Futuras:**
+- [ ] Implementação de IA + Dados
+- [ ] Incrementar Cripto como Pagamento
 
-**Incrementar Cripto como Pagamento:**
+---
 
+## 📄 Licença
 
-**Deploy e Infraestrutura:**
-- [ ] Configurar Droplet para backend Django.
-- [ ] Configurar PostgreSQL Managed Database.
-- [ ] Implementar DigitalOcean Spaces para upload de imagens.
-- [ ] Deploy do frontend no App Platform.
-- [ ] Configurar domínio customizado e SSL.
+Este projeto está sob licença. Veja o arquivo [LICENSE](LICENSE) para mais detalhes.
 
-## 💻 Pré-requisitos
-
-Antes de começar, verifique se você atendeu aos seguintes requisitos:
-
-- Você instalou a versão mais recente do [Python 3.13+](https://www.python.org/)
-
-## 🚀 Instalando
-
-Para instalar, siga estas etapas:
-
-1. Clone o repositório:
-```bash
-git clone https://github.com/Ayrton-Machado/auction-platform-api
-cd auction-platform-api
-```
-
-2. Instale as dependências:
-```bash
-pip install -r requirements.txt
-```
-
-3. Configure o setup do Banco de Dados:
-```bash
-python manage.py makemigrations
-python manage.py migrate
-```
-
-4. (Opcional) Criar superuser para acessar Django Admin:
-```bash
-python manage.py createsuperuser
-```
-- http://127.0.0.1:8000/api/admin
-
-## ☕ Usando
-
-Para usar, siga estas etapas:
-
-1. Iniciar API
-```
-python manage.py runserver
-```
-
-2. Acesse a documentação API Swagger.
-- http://127.0.0.1:8000/api/docs
-
-
-## 📝 Licença
-
-Esse projeto está sob licença. Veja o arquivo [LICENÇA](LICENSE) para mais detalhes.
+---

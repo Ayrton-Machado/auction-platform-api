@@ -6,9 +6,11 @@ from rest_framework.permissions import IsAuthenticated
 from drf_spectacular.utils import extend_schema
 from django.views.decorators.csrf import csrf_exempt
 from django.utils.decorators import method_decorator
-
+from django.core.exceptions import ValidationError
 from django.db import IntegrityError
+
 from ..serializers import LoginSerializer, RegisterSerializer
+from ..services import AuthService
 
 @extend_schema(
     summary="Loga-te",
@@ -58,29 +60,39 @@ class LoginAPI(APIView):
 )
 class RegisterAPI(APIView):      
     def post(self, request):
-        confirmation = request.data.get("confirmation")
-
-        if request.data.get("password") != confirmation:
-            return Response({
-                "error": "Passwords must match."
-            }, status=status.HTTP_400_BAD_REQUEST)
-
         serializer = RegisterSerializer(data=request.data)
-        if serializer.is_valid():
-            try:
-                user = serializer.save()
-                login(request, user)
 
+
+        if serializer.is_valid():
+            confirmation = serializer.validated_data["confirmation"]
+
+            username = serializer.validated_data["username"]
+            email = serializer.validated_data["email"]
+            password = serializer.validated_data["password"]
+
+            try:
+                register_user = AuthService.register_user(
+                    username=username,
+                    password=password,
+                    email=email,
+                    confirmation=confirmation
+                )
+                print(str(register_user))
                 return Response({
-                    "message": "Register Successful.",
+                    "message": str(register_user),
                     "user": {
-                        "username": user.username
+                        "username": username
                     }
-                }, status=status.HTTP_200_OK)
-            except IntegrityError:
-                return Response({
-                    "message": "Username already taken."
-                }, status=status.HTTP_401_UNAUTHORIZED)
+                }, status=status.HTTP_201_CREATED)
+
+            except ValidationError as e:
+                return Response(
+                    {"error": str(e)}, status=status.HTTP_400_BAD_REQUEST)
+
+            except IntegrityError as e:
+                return Response(
+                    {"error": str(e)}, status=status.HTTP_409_CONFLICT)
+
         else:
             return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 

@@ -6,6 +6,8 @@ from drf_spectacular.utils import extend_schema
 from ..models import AuctionListing, Watchlist
 from ..serializers import WatchlistSerializer
 
+from rest_framework.permissions import IsAuthenticated
+
 @extend_schema(
     summary="Adicionar listing à watchlist",
     request=WatchlistSerializer,
@@ -16,6 +18,8 @@ from ..serializers import WatchlistSerializer
     tags=['Wathclist']
 )
 class WatchlistAddAuctionAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request, listing_id):
         user = request.user
         item = AuctionListing.objects.get(id=listing_id)
@@ -37,6 +41,8 @@ class WatchlistAddAuctionAPI(APIView):
     tags=['Watchlist']
 )
 class WatchlistAuctionAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
     def get(self, request):
         user = request.user.id
         userWatchlist = Watchlist.objects.filter(user=user)
@@ -58,6 +64,8 @@ class WatchlistAuctionAPI(APIView):
     tags=['Wathclist']
 )
 class WatchlistRemoveAPI(APIView):
+    permission_classes = [IsAuthenticated]
+
     def post(self, request):
         listing_id = request.data.get('removeWatchlist')
         item = Watchlist.objects.get(id=listing_id)
